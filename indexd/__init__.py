@@ -6,10 +6,11 @@ import logging
 from gevent.server import StreamServer
 
 from exceptions import *
-from util import *
+import util
 
 LINE_MAX = 1024
 logger = logging.getLogger(__name__)
+supported_modes = ('RDONLY', 'RDWR')
 
 def check_protocol(line):
     try:
@@ -19,6 +20,8 @@ def check_protocol(line):
 
     if protocol != 'AWIP/01':
         raise AWIPHandshakeFailed(line)
+    if mode not in supported_modes:
+        raise AWIPHandshakeFailed(line, 'Bad mode')
 
     return protocol, mode
 
@@ -52,7 +55,7 @@ class Connection(object):
                 break
             except AWIPError, e:
                 logger.warn('%r: Exception', self.addr, exc_info=True)
-                self.reply(e.tojson())
+                self.reply(e.todict())
 
     def do_handshake(self):
         line = self.fp.readline(LINE_MAX)
@@ -63,7 +66,7 @@ class Connection(object):
                     self.protocol, self.mode)
 
     def handle_request(self):
-        req = self.parse_request()
+        req = util.read_response(self.fp)
         logger.debug('%r: Got request: %r', self.addr, req)
         if req is None:
             raise AWIPClientDisconnected
@@ -76,32 +79,13 @@ class Connection(object):
             d = getattr(self, method)(req)
             if 'status' not in d:
                 d['status'] = 'ok'
-            self.reply(json.dumps(d, ensure_ascii=False).encode('utf-8'))
+            self.reply(d)
         except AttributeError:
             raise AWIPClinetError('No such request commandd')
 
     def reply(self, json):
         logger.debug('%r: Sending reply: %r', self.addr, json)
-        self.fp.write(pack_netint(len(json)))
-        self.fp.write(json)
-        self.fp.flush()
-
-    def parse_request(self):
-        r = self.fp.read(4)
-        if not r:
-            return
-
-        length = parse_netint(r)
-        got = 0
-        data = []
-        while got < length:
-           r = self.fp.read(length - got)
-           if not r:
-               return
-           got += len(r)
-           data.append(r)
-
-        return json.loads(''.join(data), encoding='utf-8')
+        util.write_response(self.fp, json)
 
     def handle_cmd_ping(self, req):
         return {}

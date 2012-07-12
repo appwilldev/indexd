@@ -3,12 +3,12 @@
 import json
 
 class AWIPError(Exception):
-    def tojson(self):
+    def todict(self):
         d = {
             'status': 'error',
             'message': str(self),
         }
-        return json.dumps(d, ensure_ascii=False).encode('utf-8')
+        return d
 
 class AWIPErrorWithCode(AWIPError):
     code = 599
@@ -26,13 +26,13 @@ class AWIPErrorWithCode(AWIPError):
     def __repr__(self):
         return '<%s:code=%d, msg=%s' % (self.__class__.__name__, self.code, self.msg)
 
-    def tojson(self):
+    def todict(self):
         d = {
             'status': 'error',
             'code': self.code,
             'message': self.msg,
         }
-        return json.dumps(d, ensure_ascii=False).encode('utf-8')
+        return d
 
 
 class AWIPClinetError(AWIPErrorWithCode):
