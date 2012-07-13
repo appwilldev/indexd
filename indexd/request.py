@@ -30,7 +30,7 @@ class Request(object):
         return self.get_type(name, bool)
 
     def get_int(self, name):
-        return int(self.get_type(name, float))
+        return self.get_type(name, int)
 
     def get_float(self, name):
         return self.get_type(name, float)
