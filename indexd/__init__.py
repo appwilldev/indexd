@@ -40,7 +40,7 @@ class Connection(object):
         self.fp = socket.makefile()
         try:
             self.do_handshake()
-        except AWIPClinetError, e:
+        except AWIPClientError, e:
             logger.warn('%r: Bad Handshake line: %r', self.addr, e.line)
             self.fp.write(str(e) + '\r\n')
             self.fp.close()
@@ -73,7 +73,7 @@ class Connection(object):
         try:
             tp = req['cmd']
         except KeyError:
-            raise AWIPClinetError('No request cmd specified')
+            raise AWIPClientError('No request cmd specified')
         method = 'handle_cmd_%s' % tp
         try:
             d = getattr(self, method)(req)
@@ -81,7 +81,7 @@ class Connection(object):
                 d['status'] = 'ok'
             self.reply(d)
         except AttributeError:
-            raise AWIPClinetError('No such request commandd')
+            raise AWIPClientError('No such request commandd')
 
     def reply(self, json):
         logger.debug('%r: Sending reply: %r', self.addr, json)

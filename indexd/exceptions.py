@@ -35,10 +35,10 @@ class AWIPErrorWithCode(AWIPError):
         return d
 
 
-class AWIPClinetError(AWIPErrorWithCode):
+class AWIPClientError(AWIPErrorWithCode):
     code = 400
 
-class AWIPHandshakeFailed(AWIPClinetError):
+class AWIPHandshakeFailed(AWIPClientError):
     msg = 'Bad Protocol'
     def __init__(self, line, *args, **kwargs):
         self.line = line
