@@ -35,15 +35,15 @@ class XapianDB(object):
         else:
             raise AWIPServerError('unknown mode passed to %s' % self.__class__.__name__)
 
-    def query(self, qs, offset, pagesize):
         #TODO: use correct stemmer and prefix
-        queryparser = xapian.QueryParser()
+        self.queryparser = queryparser = xapian.QueryParser()
         queryparser.set_stemmer(xapian.Stem("en"))
         queryparser.set_stemming_strategy(queryparser.STEM_SOME)
         queryparser.add_prefix("title", "S")
         queryparser.add_prefix("description", "XD")
 
-        query = queryparser.parse_query(qs)
+    def query(self, qs, offset, pagesize):
+        query = self.queryparser.parse_query(qs)
         enquire = xapian.Enquire(self.db)
         enquire.set_query(query)
         return enquire.get_mset(offset, pagesize)
