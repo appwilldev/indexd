@@ -94,4 +94,6 @@ class Connection(object):
         name = req.name
         if name == 'indexdb':
             self.indexdb = req.get_string('value')
+        else:
+            raise AWIPRequestInvalid('No such setting')
         return {}
