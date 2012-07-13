@@ -29,6 +29,9 @@ class Client(object):
     def set(self, **kv):
         self.do_cmd('set', **kv)
 
+    def query(self, qs):
+        self.do_cmd('query', qs=qs, start=0, size=20)
+
     def do_cmd(self, cmd, **other):
         d = { 'cmd': cmd }
         d.update(other)

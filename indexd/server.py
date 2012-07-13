@@ -2,11 +2,13 @@
 
 import json
 import logging
+import functools
 
 from gevent.server import StreamServer
 
 from exceptions import *
 from request import Request
+import xapiandb
 import util
 
 LINE_MAX = 1024
@@ -25,6 +27,15 @@ def check_protocol(line):
         raise AWIPHandshakeFailed(line, 'Bad mode')
 
     return protocol, mode
+
+def indexdb_set(func):
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if not self.indexdb:
+            raise AWIPRequestInvalid('Please set indexdb first')
+        return func(self, *args, **kwargs)
+    return wrapper
+
 
 class IndexServer(object):
     def __init__(self, address):
@@ -75,13 +86,13 @@ class Connection(object):
         req = Request(sreq)
         method = 'handle_cmd_%s' % req.cmd
         logger.info('%r: %s', self.addr, method)
-        try:
-            d = getattr(self, method)(req)
-            if 'status' not in d:
-                d['status'] = 'ok'
-            self.reply(d)
-        except AttributeError:
+        f = getattr(self, method, None)
+        if f is None:
             raise AWIPClientError('No such request command')
+        d = f(req)
+        if 'status' not in d:
+            d['status'] = 'ok'
+        self.reply(d)
 
     def reply(self, json):
         logger.debug('%r: Sending reply: %r', self.addr, json)
@@ -93,7 +104,13 @@ class Connection(object):
     def handle_cmd_set(self, req):
         name = req.name
         if name == 'indexdb':
-            self.indexdb = req.get_string('value')
+            self.indexdb = xapiandb.get_db(req.get_string('value'), mode=self.mode)
         else:
             raise AWIPRequestInvalid('No such setting')
         return {}
+
+    @indexdb_set
+    def handle_cmd_query(self, req):
+        results = self.indexdb.query(req.qs, req.start, req.size)
+        d = [doc.docid for doc in results]
+        return { 'results': d }

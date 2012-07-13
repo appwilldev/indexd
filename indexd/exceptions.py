@@ -47,3 +47,10 @@ class AWIPHandshakeFailed(AWIPClientError):
 class AWIPClientDisconnected(AWIPError): pass
 
 class AWIPRequestInvalid(AWIPClientError): pass
+
+class AWIPServerError(AWIPErrorWithCode):
+    code = 500
+
+class AWIPOperationError(AWIPErrorWithCode):
+    code = 400
+
