@@ -6,6 +6,7 @@ import logging
 from gevent.server import StreamServer
 
 from exceptions import *
+from request import Request
 import util
 
 LINE_MAX = 1024
@@ -67,22 +68,20 @@ class Connection(object):
                     self.protocol, self.mode)
 
     def handle_request(self):
-        req = util.read_response(self.fp)
-        logger.debug('%r: Got request: %r', self.addr, req)
-        if req is None:
+        sreq = util.read_response(self.fp)
+        logger.debug('%r: Got request: %r', self.addr, sreq)
+        if sreq is None:
             raise AWIPClientDisconnected
-        try:
-            tp = req['cmd']
-        except KeyError:
-            raise AWIPClientError('No request cmd specified')
-        method = 'handle_cmd_%s' % tp
+        req = Request(sreq)
+        method = 'handle_cmd_%s' % req.cmd
+        logger.info('%r: %s', self.addr, method)
         try:
             d = getattr(self, method)(req)
             if 'status' not in d:
                 d['status'] = 'ok'
             self.reply(d)
         except AttributeError:
-            raise AWIPClientError('No such request commandd')
+            raise AWIPClientError('No such request command')
 
     def reply(self, json):
         logger.debug('%r: Sending reply: %r', self.addr, json)
@@ -92,8 +91,7 @@ class Connection(object):
         return {}
 
     def handle_cmd_set(self, req):
-        name = util.get_required_field(req, 'name')
-        value = util.get_required_field(req, 'value')
+        name = req.name
         if name == 'indexdb':
-            self.indexdb = value
+            self.indexdb = req.get_string('value')
         return {}
