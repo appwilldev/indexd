@@ -61,7 +61,7 @@ class Connection(object):
         line = self.fp.readline(LINE_MAX)
         logger.debug('%r: Got handshake line: %r', self.addr, line)
         self.protocol, self.mode = check_protocol(line)
-        self.reply('{"status": "ok"}')
+        self.reply('200 OK\r\n')
         logger.info('%r: Handshake complete, protocol=%s, mode=%s', self.addr,
                     self.protocol, self.mode)
 
