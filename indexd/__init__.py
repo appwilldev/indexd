@@ -34,6 +34,7 @@ class IndexServer(object):
         self._server.serve_forever()
 
 class Connection(object):
+    indexdb = None
     def __init__(self, socket, address):
         logger.info('New connection from %r', address)
         self.addr = address
@@ -88,4 +89,11 @@ class Connection(object):
         util.write_response(self.fp, json)
 
     def handle_cmd_ping(self, req):
+        return {}
+
+    def handle_cmd_set(self, req):
+        name = util.get_required_field(req, 'name')
+        value = util.get_required_field(req, 'value')
+        if name == 'indexdb':
+            self.indexdb = value
         return {}

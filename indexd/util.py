@@ -3,6 +3,8 @@
 import json
 import struct
 
+from exceptions import *
+
 def parse_netint(b):
     return struct.unpack('!I', b)[0]
 
@@ -32,3 +34,9 @@ def read_response(fp):
         data.append(r)
 
     return json.loads(''.join(data), encoding='utf-8')
+
+def get_required_field(req, name):
+    try:
+        return req[name]
+    except KeyError:
+        raise AWIPRequestInvalid('Required "%s" field not found'% name)
