@@ -10,8 +10,8 @@ class TestDB(TestBase):
 
     def test_setbad(self):
         ans = self.client.set(name='indexdb', value='db_nonexistent')
-        self.assertEqual(ans['status'], u'error')
+        self.assertMessageFind(ans, 'no such file or directory')
 
 if __name__ == '__main__':
-  unittest.main()
+    unittest.main()
 

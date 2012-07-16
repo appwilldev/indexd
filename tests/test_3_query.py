@@ -20,6 +20,5 @@ class TestQuery(TestBase):
         ans = self.client.query('title:water')
         self.assertEqual(ans, q2)
 
-
 if __name__ == '__main__':
-  unittest.main()
+    unittest.main()
