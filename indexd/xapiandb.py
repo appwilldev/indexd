@@ -38,6 +38,8 @@ def createdb(name, confdata):
     with open(fn, 'w') as f:
         f.write(confdata)
 
+    get_db(name, 'RDWR')
+
 class XapianDB(object):
     queryparser = None
     config = None
@@ -46,8 +48,9 @@ class XapianDB(object):
         if _dbpath is None:
             raise AWIPServerError('database directory not set yet')
         self.name = name
+        dbpath = os.path.join(_dbpath, name)
         if mode == 'RDONLY':
-            self.db = xapian.Database(os.path.join(_dbpath, name))
+            self.db = xapian.Database(dbpath)
         elif mode == 'RDWR':
             self.db = xapian.WritableDatabase(dbpath, xapian.DB_CREATE_OR_OPEN)
         else:
