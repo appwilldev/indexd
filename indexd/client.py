@@ -7,10 +7,10 @@ from pprint import pprint
 from util import read_response, write_response
 
 class Client(object):
-    def __init__(self, addr):
+    def __init__(self, addr, mode):
         sock = self.sock = socket.socket()
         sock.connect(addr)
-        sock.send('AWIP/01 RDONLY\r\n')
+        sock.send('AWIP/01 %s\r\n' % mode)
         re = sock.recv(1024)
         self.fp = sock.makefile()
 

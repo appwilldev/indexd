@@ -15,9 +15,10 @@ import unittest
 from indexd import client
 
 class TestBase(unittest.TestCase):
+    mode = 'RDONLY'
     def setUp(self):
         self.subp = subprocess.Popen(thisdir('runserver'), stderr=open(thisdir('server.log'), 'a'))
-        self.client = client.Client(('', 4000))
+        self.client = client.Client(('', 4000), self.mode)
 
     def tearDown(self):
         self.subp.send_signal(2)
