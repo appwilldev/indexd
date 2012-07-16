@@ -9,6 +9,7 @@ def thisdir(p):
 
 sys.path.append(thisdir('..'))
 
+import time
 import subprocess
 import unittest
 
@@ -18,11 +19,16 @@ class TestBase(unittest.TestCase):
     mode = 'RDONLY'
     def setUp(self):
         self.subp = subprocess.Popen(thisdir('runserver'), stderr=open(thisdir('server.log'), 'a'))
+        time.sleep(0.5)
         self.client = client.Client(('', 4000), self.mode)
 
     def tearDown(self):
         self.subp.send_signal(2)
         self.subp.wait()
+
+    def assertMessageFind(self, ans, phrase):
+        self.assertEqual(ans['status'], u'error', 'Expected error not appear')
+        self.assertTrue(ans['message'].lower().find(phrase) >= 0, "Error massage doesn't match: " + ans['message'])
 
 if __name__ == '__main__':
     unittest.main()

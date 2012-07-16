@@ -23,6 +23,9 @@ class Client(object):
     def query(self, qs):
         return self.do_cmd('query', qs=qs, start=0, size=20)
 
+    def createdb(self, name, conf):
+        return self.do_cmd('createdb', name=name, confdata=conf)
+
     def do_cmd(self, cmd, **other):
         d = { 'cmd': cmd }
         d.update(other)

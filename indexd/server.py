@@ -3,6 +3,8 @@
 import json
 import logging
 import functools
+import ConfigParser
+import io
 
 from gevent.server import StreamServer
 
@@ -33,6 +35,15 @@ def indexdb_set(func):
     def wrapper(self, *args, **kwargs):
         if not self.indexdb:
             raise AWIPRequestInvalid('Please set indexdb first')
+        return func(self, *args, **kwargs)
+    return wrapper
+
+
+def conn_writable(func):
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if self.mode != 'RDWR':
+            raise AWIPRequestInvalid('Connection is in readonly mode')
         return func(self, *args, **kwargs)
     return wrapper
 
@@ -114,3 +125,13 @@ class Connection(object):
         results = self.indexdb.query(req.qs, req.start, req.size)
         d = [doc.docid for doc in results]
         return { 'results': d }
+
+    @conn_writable
+    def handle_cmd_createdb(self, req):
+        name = req.name
+        confdata = req.confdata
+        conf = util.CasedConfigParser()
+        try:
+            conf.readfp(io.BytesIO(confdata))
+        except (ConfigParser.Error, TypeError), e:
+            raise AWIPRequestInvalid('Invalid config data')
