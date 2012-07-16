@@ -27,6 +27,17 @@ def get_db(name, mode):
         _open_dbs[(name, mode)] = db
         return db
 
+def _config_file_path(name):
+    return os.path.join(_dbpath, name + '.ini')
+
+def createdb(name, confdata):
+    fn = _config_file_path(name)
+    if os.path.exists(fn):
+        raise AWIPRequestInvalid('Index database "%s" already exists' % name)
+
+    with open(fn, 'w') as f:
+        f.write(confdata)
+
 class XapianDB(object):
     queryparser = None
     config = None
@@ -69,5 +80,5 @@ class XapianDB(object):
             return
 
         conf = self.config = CasedConfigParser()
-        conf.readfp(open(os.path.join(_dbpath, self.name + '.ini')))
+        conf.readfp(open(_config_file_path(self.name)))
         logger.info('config file for %s loaded.', self.name)

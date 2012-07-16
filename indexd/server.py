@@ -132,6 +132,8 @@ class Connection(object):
         confdata = req.confdata
         conf = util.CasedConfigParser()
         try:
-            conf.readfp(io.BytesIO(confdata))
+            conf.readfp(io.StringIO(confdata))
         except (ConfigParser.Error, TypeError), e:
             raise AWIPRequestInvalid('Invalid config data')
+        xapiandb.createdb(name, confdata)
+        return {}

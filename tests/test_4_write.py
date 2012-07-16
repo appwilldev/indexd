@@ -29,11 +29,11 @@ class TestCreateFailure(TestBase):
         ans = self.client.do_cmd('createdb')
         self.assertMessageFind(ans, 'name')
 
-    def test_createdb_noconf(self):
+    def test_noconf(self):
         ans = self.client.do_cmd('createdb', name='test')
         self.assertMessageFind(ans, 'confdata')
 
-    def test_createdb_badconf(self):
+    def test_badconf(self):
         ans = self.client.createdb(name='test', conf=123)
         self.assertMessageFind(ans, 'invalid config')
 
@@ -42,6 +42,10 @@ class TestCreateFailure(TestBase):
 
         ans = self.client.createdb(name='test', conf=dict(test='failure'))
         self.assertMessageFind(ans, 'invalid config')
+
+    def test_existing(self):
+        ans = self.client.createdb(name='db', conf=config)
+        self.assertMessageFind(ans, 'already exist')
 
 if __name__ == '__main__':
     unittest.main()
