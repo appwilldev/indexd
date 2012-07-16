@@ -1,20 +1,16 @@
 # vim:fileencoding=utf-8:sw=4
 
 import os
-from ConfigParser import ConfigParser
 import logging
 
 import xapian
 
+from util import CasedConfigParser
 from exceptions import *
 
 _open_dbs = {}
 _dbpath = None
 logger = logging.getLogger(__name__)
-
-class CasedConfigParser(ConfigParser):
-    def optionxform(self, option):
-        return option
 
 def set_dbdir(path):
     global _dbpath

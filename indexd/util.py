@@ -2,6 +2,7 @@
 
 import json
 import struct
+from ConfigParser import ConfigParser
 
 def parse_netint(b):
     return struct.unpack('!I', b)[0]
@@ -32,4 +33,8 @@ def read_response(fp):
         data.append(r)
 
     return json.loads(''.join(data), encoding='utf-8')
+
+class CasedConfigParser(ConfigParser):
+    def optionxform(self, option):
+        return option
 
