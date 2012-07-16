@@ -126,6 +126,21 @@ class Connection(object):
         d = [doc.docid for doc in results]
         return { 'results': d }
 
+    @indexdb_set
+    def handle_cmd_retrieve(self, req):
+        ret = []
+        for id in req.ids:
+            try:
+                doc = self.indexdb.get_document(id)
+                ret.append(util.tojson(doc.get_data()))
+            except:
+                logger.warn('%r: Exception when retrieving doc %r', self.addr, id, exc_info=True)
+                ret.append(None)
+        return {
+            'status': 'ok',
+            'results': ret,
+        }
+
     @conn_writable
     def handle_cmd_createdb(self, req):
         name = req.name

@@ -10,6 +10,9 @@ def parse_netint(b):
 def pack_netint(i):
     return struct.pack('!I', i)
 
+def tojson(s):
+    return json.loads(s, encoding='utf-8')
+
 def write_response(fp, s):
     if isinstance(s, dict):
         s = json.dumps(s, ensure_ascii=False).encode('utf-8')
@@ -32,7 +35,7 @@ def read_response(fp):
         got += len(r)
         data.append(r)
 
-    return json.loads(''.join(data), encoding='utf-8')
+    return tojson(''.join(data))
 
 class CasedConfigParser(ConfigParser):
     def optionxform(self, option):

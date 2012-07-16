@@ -85,3 +85,6 @@ class XapianDB(object):
         conf = self.config = CasedConfigParser()
         conf.readfp(open(_config_file_path(self.name)))
         logger.info('config file for %s loaded.', self.name)
+
+    def get_document(self, id):
+        return self.db.get_document(id)

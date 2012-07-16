@@ -17,6 +17,7 @@ from indexd import client
 
 class TestBase(unittest.TestCase):
     mode = 'RDONLY'
+    maxDiff = None
     def setUp(self):
         self.subp = subprocess.Popen(thisdir('runserver'), stderr=open(thisdir('server.log'), 'a'))
         time.sleep(0.5)
