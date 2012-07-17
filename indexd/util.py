@@ -13,9 +13,12 @@ def pack_netint(i):
 def fromjson(s):
     return json.loads(s, encoding='utf-8')
 
+def tojson(d):
+    return json.dumps(d, ensure_ascii=False).encode('utf-8')
+
 def write_response(fp, s):
     if isinstance(s, dict):
-        s = json.dumps(s, ensure_ascii=False).encode('utf-8')
+        s = tojson(s)
     fp.write(pack_netint(len(s)))
     fp.write(s)
     fp.flush()
