@@ -2,23 +2,7 @@
 
 import os
 import unittest
-from base import TestBase
-
-config = '''\
-[config]
-id = id_NUMBER
-lang = en
-indexing = TITLE, DESCRIPTION
-
-[field_prefix]
-S = TITLE
-XD = DESCRIPTION
-
-[prefix_name]
-S = title
-XD = description
-'''
-dbdir = os.path.join(os.path.split(__file__)[0], '..')
+from base import TestBase, dbdir, config
 
 class TestCreateReadOnly(TestBase):
     def test_create_with_readonly_mode(self):
@@ -51,13 +35,14 @@ class TestCreateFailure(TestBase):
 
 class TestCreateOK(TestBase):
     mode = 'RDWR'
+    dbname = 'test'
     def test_create(self):
-        ans = self.client.createdb(name='test', conf=config)
+        ans = self.client.createdb(name=self.dbname, conf=config)
         self.assertEqual(ans, {u'status': u'ok'})
 
     def tearDown(self):
-        os.system("rm -rf '%s'" % os.path.join(dbdir, 'test'))
-        os.unlink(os.path.join(dbdir, 'test.ini'))
+        os.system("rm -rf '%s'" % os.path.join(dbdir, self.dbname))
+        os.unlink(os.path.join(dbdir, '%s.ini' % self.dbname))
         super(TestCreateOK, self).tearDown()
 
 if __name__ == '__main__':

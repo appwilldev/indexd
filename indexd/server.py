@@ -152,3 +152,9 @@ class Connection(object):
             raise AWIPRequestInvalid('Invalid config data')
         xapiandb.createdb(name, confdata)
         return {}
+
+    @indexdb_set
+    @conn_writable
+    def handle_cmd_insert(self, req):
+        self.indexdb.add_document(req.document)
+        return {}

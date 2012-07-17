@@ -5,7 +5,7 @@ import logging
 
 import xapian
 
-from util import CasedConfigParser
+import util
 from exceptions import *
 
 _open_dbs = {}
@@ -17,7 +17,8 @@ def set_dbdir(path):
     _dbpath = path
 
 def get_db(name, mode):
-    if name in _open_dbs:
+    if (name, mode) in _open_dbs:
+        logger.info('reuse already open db %s, mode %s', name, mode)
         return _open_dbs[(name, mode)]
     else:
         try:
@@ -43,6 +44,7 @@ def createdb(name, confdata):
 
 class XapianDB(object):
     queryparser = None
+    termgenerator = None
     config = None
 
     def __init__(self, name, mode):
@@ -79,13 +81,56 @@ class XapianDB(object):
             queryparser.add_prefix(name, prefix)
         logger.info('query parser for %s loaded.', self.name)
 
+    def load_termgenerator(self):
+        if self.termgenerator:
+            return
+
+        self.load_config()
+        self.termgenerator = xapian.TermGenerator()
+        self.termgenerator.set_stemmer(xapian.Stem(self.config.get('config', 'lang')))
+        logger.info('term generator for %s loaded.', self.name)
+
     def load_config(self):
         if self.config:
             return
 
-        conf = self.config = CasedConfigParser()
+        conf = self.config = util.CasedConfigParser()
         conf.readfp(open(_config_file_path(self.name)))
         logger.info('config file for %s loaded.', self.name)
 
     def get_document(self, id):
         return self.db.get_document(id)
+
+    def add_document(self, doc):
+        self.load_termgenerator()
+        config = self.config
+        termgenerator = self.termgenerator
+
+
+        indexingTerm = [x.strip() for x in config.get('config', 'indexing').split(',')]
+
+        xpdoc = xapian.Document()
+        termgenerator.set_document(xpdoc)
+
+        try:
+            # Index fields with prefixes.
+            for prefix, field in config.items('field_prefix'):
+                termgenerator.index_text(doc[field], 1, prefix)
+
+            # Index fields without prefixes for general search.
+            for field in indexingTerm:
+                termgenerator.index_text(doc[field])
+                termgenerator.increase_termpos()
+
+            xpdoc.set_data(util.tojson(doc))
+
+            idfield = config.get('config', 'id')
+            idterm = u"Q" + unicode(doc[idfield])
+            if len(idterm) > 240:
+                raise AWIPRequestInvalid('value for id field "%s" too long; please redesign your document structure' % idfield)
+            xpdoc.add_boolean_term(idterm)
+            self.db.replace_document(idterm, xpdoc)
+
+        except KeyError, e:
+            raise AWIPRequestInvalid('invalid document: missing key "%s"' % e.args[0])
+

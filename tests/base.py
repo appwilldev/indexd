@@ -2,12 +2,28 @@
 
 import sys
 import os
+
 thisDir = os.path.split(__file__)[0]
+config = '''\
+[config]
+id = id_NUMBER
+lang = en
+indexing = TITLE, DESCRIPTION
+
+[field_prefix]
+S = TITLE
+XD = DESCRIPTION
+
+[prefix_name]
+S = title
+XD = description
+'''
 
 def thisdir(p):
     return os.path.join(thisDir, p)
 
-sys.path.append(thisdir('..'))
+dbdir = thisdir('..')
+sys.path.append(dbdir)
 
 import time
 import subprocess

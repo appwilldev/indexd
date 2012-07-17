@@ -30,6 +30,9 @@ class Client(object):
         ids = list(ids)
         return self.do_cmd('retrieve', ids=ids)
 
+    def insert(self, doc):
+        return self.do_cmd('insert', document=doc)
+
     def do_cmd(self, cmd, **other):
         d = { 'cmd': cmd }
         d.update(other)
