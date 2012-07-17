@@ -2,7 +2,7 @@
 
 import json
 import struct
-from ConfigParser import ConfigParser
+from ConfigParser import RawConfigParser
 
 def parse_netint(b):
     return struct.unpack('!I', b)[0]
@@ -40,7 +40,7 @@ def read_response(fp):
 
     return fromjson(''.join(data))
 
-class CasedConfigParser(ConfigParser):
+class CasedConfigParser(RawConfigParser):
     def optionxform(self, option):
         return option
 
