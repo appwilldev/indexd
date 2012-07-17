@@ -58,6 +58,7 @@ class IndexServer(object):
 
 class Connection(object):
     indexdb = None
+    mode = None
     def __init__(self, socket, address):
         logger.info('New connection from %r', address)
         self.addr = address
@@ -75,6 +76,8 @@ class Connection(object):
             try:
                 self.handle_request()
             except AWIPClientDisconnected:
+                if self.indexdb and self.mode == 'RDWR':
+                    self.indexdb.close()
                 logger.info('%r: disconnected', self.addr)
                 break
             except AWIPError, e:

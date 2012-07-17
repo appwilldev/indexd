@@ -51,6 +51,7 @@ class XapianDB(object):
         if _dbpath is None:
             raise AWIPServerError('database directory not set yet')
         self.name = name
+        self.mode = mode
         dbpath = os.path.join(_dbpath, name)
         if mode == 'RDONLY':
             self.db = xapian.Database(dbpath)
@@ -148,3 +149,9 @@ class XapianDB(object):
 
     def delete_document(self, id):
         return self.db.delete_document(id)
+
+    def close(self):
+        logger.info('db %s closed (mode=%s)', self.name, self.mode)
+        del _open_dbs[(self.name, self.mode)]
+        self.db.commit()
+        self.db.close()

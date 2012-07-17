@@ -12,4 +12,7 @@ import indexd.beautifullog
 indexd.beautifullog.enable_pretty_logging(logging.DEBUG)
 indexd.xapiandb.set_dbdir(dbdir)
 server = indexd.IndexServer(('', 4000))
-server.start()
+try:
+    server.start()
+except KeyboardInterrupt:
+    logging.info('stopping...')

@@ -41,9 +41,9 @@ class TestCreateOK(TestBase):
         self.assertEqual(ans, {u'status': u'ok'})
 
     def tearDown(self):
+        super(TestCreateOK, self).tearDown()
         os.system("rm -rf '%s'" % os.path.join(dbdir, self.dbname))
         os.unlink(os.path.join(dbdir, '%s.ini' % self.dbname))
-        super(TestCreateOK, self).tearDown()
 
 if __name__ == '__main__':
     unittest.main()

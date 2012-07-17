@@ -14,6 +14,10 @@ class Client(object):
         re = sock.recv(1024)
         self.fp = sock.makefile()
 
+    def close(self):
+        self.sock.close()
+        self.fp.close()
+
     def ping(self):
         return self.do_cmd('ping')
 

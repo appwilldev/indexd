@@ -40,6 +40,7 @@ class TestBase(unittest.TestCase):
         self.client = client.Client(('', 4000), self.mode)
 
     def tearDown(self):
+        self.client.close()
         self.subp.send_signal(2)
         self.subp.wait()
 
