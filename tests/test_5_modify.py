@@ -33,6 +33,24 @@ class TestCreateInsert(TestBase):
         ans = self.client.retrieve([1])['results'][0]
         self.assertEqual(ans, doc)
 
+    def test_delete_by_id(self):
+        self.test_add_ok()
+        ans = self.client.delete([1])
+        self.assertEqual(ans['results'], [True])
+        ans = self.client.query('test')
+        self.assertEqual(ans['results'], [])
+
+    def test_delete_by_term(self):
+        self.test_add_ok()
+        ans = self.client.delete(["8237"])
+        self.assertEqual(ans['results'], [True])
+        ans = self.client.query('test')
+        self.assertEqual(ans['results'], [])
+
+    def test_delete_nonexistent(self):
+        ans = self.client.delete(["8237", 32, 1])
+        self.assertEqual(ans['results'], [True, False, False])
+
     def tearDown(self):
         os.system("rm -rf '%s'" % os.path.join(dbdir, self.dbname))
         os.unlink(os.path.join(dbdir, '%s.ini' % self.dbname))

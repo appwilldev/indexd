@@ -33,6 +33,10 @@ class Client(object):
     def insert(self, doc):
         return self.do_cmd('insert', document=doc)
 
+    def delete(self, ids):
+        ids = list(ids)
+        return self.do_cmd('delete', ids=ids)
+
     def do_cmd(self, cmd, **other):
         d = { 'cmd': cmd }
         d.update(other)

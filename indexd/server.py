@@ -158,3 +158,21 @@ class Connection(object):
     def handle_cmd_insert(self, req):
         self.indexdb.add_document(req.document)
         return {}
+
+    @indexdb_set
+    @conn_writable
+    def handle_cmd_delete(self, req):
+        ret = []
+        for id in req.ids:
+            if isinstance(id, basestring):
+                id = u'Q' + id
+            try:
+                self.indexdb.delete_document(id)
+                ret.append(True)
+            except:
+                logger.warn('%r: Exception when deleting doc %r', self.addr, id, exc_info=True)
+                ret.append(False)
+        return {
+            'status': 'ok',
+            'results': ret,
+        }

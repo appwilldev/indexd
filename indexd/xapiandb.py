@@ -134,3 +134,5 @@ class XapianDB(object):
         except KeyError, e:
             raise AWIPRequestInvalid('invalid document: missing key "%s"' % e.args[0])
 
+    def delete_document(self, id):
+        return self.db.delete_document(id)
