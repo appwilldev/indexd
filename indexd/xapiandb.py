@@ -35,6 +35,7 @@ def createdb(name, confdata):
     if os.path.exists(fn):
         raise AWIPRequestInvalid('Index database "%s" already exists' % name)
 
+    #TODO: validate the config
     with open(fn, 'w') as f:
         f.write(confdata)
 
