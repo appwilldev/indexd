@@ -132,7 +132,7 @@ class Connection(object):
         for id in req.ids:
             try:
                 doc = self.indexdb.get_document(id)
-                ret.append(util.tojson(doc.get_data()))
+                ret.append(util.fromjson(doc.get_data()))
             except:
                 logger.warn('%r: Exception when retrieving doc %r', self.addr, id, exc_info=True)
                 ret.append(None)
