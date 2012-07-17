@@ -79,6 +79,7 @@ class XapianDB(object):
         queryparser.set_stemming_strategy(queryparser.STEM_SOME)
         for prefix, name in config.items('prefix_name'):
             queryparser.add_prefix(name, prefix)
+        queryparser.add_prefix('_id', 'Q')
         logger.info('query parser for %s loaded.', self.name)
 
     def load_termgenerator(self):
@@ -99,7 +100,14 @@ class XapianDB(object):
         logger.info('config file for %s loaded.', self.name)
 
     def get_document(self, id):
-        return self.db.get_document(id)
+        if isinstance(id, basestring):
+            idterm = u'_id:' + id
+            ids = self.query(idterm, 0, 1)
+            if len(ids) != 1:
+                raise KeyError('No such document')
+            return ids[0].document
+        else:
+            return self.db.get_document(id)
 
     def add_document(self, doc):
         self.load_termgenerator()
@@ -119,7 +127,11 @@ class XapianDB(object):
 
             # Index fields without prefixes for general search.
             for field in indexingTerm:
-                termgenerator.index_text(doc[field])
+                try:
+                    termgenerator.index_text(doc[field])
+                except KeyError:
+                    # If the key can't be found, just ignore it
+                    continue
                 termgenerator.increase_termpos()
 
             xpdoc.set_data(util.tojson(doc))

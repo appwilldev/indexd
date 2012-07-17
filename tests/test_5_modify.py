@@ -8,6 +8,13 @@ doc = {
     'id_NUMBER': 8237,
     'TITLE': 'test hehe',
     'DESCRIPTION': 'This is just a document for testing purpose :-)',
+    'extra': 'some extra text',
+}
+doc2 = {
+    'id_NUMBER': 8237,
+    'TITLE': 'changed title',
+    'DESCRIPTION': 'This is just a document for testing purpose :-)',
+    'extra': 'some extra text',
 }
 
 class TestCreateInsert(TestBase):
@@ -50,6 +57,31 @@ class TestCreateInsert(TestBase):
     def test_delete_nonexistent(self):
         ans = self.client.delete(["8237", 32, 1])
         self.assertEqual(ans['results'], [True, False, False])
+
+    def test_edit_title_change(self):
+        self.test_add_ok()
+        ans = self.client.edit("8237", {
+            "set": {
+                "TITLE": "changed title",
+            }
+        })
+        self.assertEqual(ans, {u'status': u'ok'})
+        ans = self.client.query('change')
+        self.assertEqual(ans['results'], [1])
+        ans = self.client.retrieve([1])['results'][0]
+        self.assertEqual(ans, doc2)
+
+    def test_edit_title_del(self):
+        self.test_add_ok()
+        ans = self.client.query('extra')
+        self.assertEqual(ans['results'], [1])
+
+        ans = self.client.edit(1, {
+            "del": ["extra", "nonexistent"],
+        })
+        self.assertEqual(ans, {u'status': u'ok'})
+        ans = self.client.query('extra')
+        self.assertEqual(ans['results'], [])
 
     def tearDown(self):
         os.system("rm -rf '%s'" % os.path.join(dbdir, self.dbname))

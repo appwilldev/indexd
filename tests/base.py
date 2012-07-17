@@ -8,7 +8,7 @@ config = '''\
 [config]
 id = id_NUMBER
 lang = en
-indexing = TITLE, DESCRIPTION
+indexing = TITLE, DESCRIPTION, extra
 
 [field_prefix]
 S = TITLE

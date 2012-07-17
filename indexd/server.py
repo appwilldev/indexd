@@ -176,3 +176,33 @@ class Connection(object):
             'status': 'ok',
             'results': ret,
         }
+
+    @indexdb_set
+    @conn_writable
+    def handle_cmd_edit(self, req):
+        id = req.id
+        try:
+            doc = self.indexdb.get_document(id)
+            docdata = util.fromjson(doc.get_data())
+        except Exception, e:
+            logger.warn('%r: Exception when retrieving doc %r', self.addr, id, exc_info=True)
+            raise AWIPRequestInvalid('failed to read the doc: ' + str(e))
+
+        try:
+            new = req.get_dict('set')
+            docdata.update(new)
+        except AWIPRequestInvalid:
+            pass
+
+        try:
+            todel = req.get_list('del')
+            for i in todel:
+                try:
+                    del docdata[i]
+                except KeyError:
+                    pass
+        except AWIPRequestInvalid:
+            pass
+
+        self.indexdb.add_document(docdata)
+        return {}
