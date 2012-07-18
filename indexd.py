@@ -23,7 +23,7 @@ def main():
     parser.add_argument('-d', '--fork', action='store_true',
                         help='fork to background; suppress logging to stderr')
     parser.add_argument('-m', '--mode', choices=indexd.constants.supported_modes,
-                        type=lambda x: x.split(','),
+                        nargs='*',
                         help='the mode(s) to run')
     parser.add_argument('--db', default=None,
                         help='index db directory')
