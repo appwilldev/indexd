@@ -14,7 +14,7 @@ doc1000 = {u'MEASUREMENTS': '', u'DESCRIPTION': u'White light reflection hologra
 class TestQuery(TestBase):
     def setUp(self):
         super(TestQuery, self).setUp()
-        self.client.set(name='indexdb', value='db')
+        self.client.setdb('db')
 
     def test_simpleQuery(self):
         ans = self.client.query('water')

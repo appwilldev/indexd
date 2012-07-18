@@ -20,8 +20,8 @@ class Client(object):
     def ping(self):
         return self.do_cmd('ping')
 
-    def set(self, **kv):
-        return self.do_cmd('set', **kv)
+    def setdb(self, db):
+        return self.do_cmd('setdb', value=db)
 
     def query(self, qs):
         return self.do_cmd('query', qs=qs, start=0, size=20)

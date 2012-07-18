@@ -23,7 +23,7 @@ class TestCreateInsert(TestBase):
     def setUp(self):
         super(TestCreateInsert, self).setUp()
         ans = self.client.createdb(name=self.dbname, conf=config)
-        self.client.set(name='indexdb', value=self.dbname)
+        self.client.setdb(self.dbname)
 
     def test_add_missingkey(self):
         ans = self.client.insert({'abc': 'def'})

@@ -107,12 +107,8 @@ class Connection(object):
     def handle_cmd_ping(self, req):
         return {}
 
-    def handle_cmd_set(self, req):
-        name = req.name
-        if name == 'indexdb':
-            self.indexdb = xapiandb.get_db(req.get_string('value'), mode=self.mode)
-        else:
-            raise AWIPRequestInvalid('No such setting')
+    def handle_cmd_setdb(self, req):
+        self.indexdb = xapiandb.get_db(req.get_string('value'), mode=self.mode)
         return {}
 
     def handle_cmd_setmode(self, req):
