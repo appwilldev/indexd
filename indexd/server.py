@@ -35,8 +35,11 @@ def conn_writable(func):
 
 
 class IndexServer(object):
-    def __init__(self, address):
-        self._server = StreamServer(address, Connection)
+    def __init__(self, address, modes_to_accept=supported_modes):
+        self._server = StreamServer(
+            address,
+            functools.partial(Connection, modes_to_accept=modes_to_accept),
+        )
 
     def start(self):
         logger.info('IndexServer started.')
@@ -45,7 +48,8 @@ class IndexServer(object):
 class Connection(object):
     indexdb = None
     mode = None
-    def __init__(self, socket, address):
+    def __init__(self, socket, address, modes_to_accept=supported_modes):
+        self.modes_to_accept = modes_to_accept
         logger.info('New connection from %r', address)
         self.addr = address
         self.sock = socket
@@ -113,7 +117,7 @@ class Connection(object):
 
     def handle_cmd_setmode(self, req):
         v = req.value
-        if v in supported_modes:
+        if v in self.modes_to_accept:
             self.mode = v
         else:
             raise AWIPRequestInvalid('Unsupported mode %s' % v)
