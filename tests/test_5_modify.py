@@ -58,9 +58,9 @@ class TestCreateInsert(TestBase):
         ans = self.client.delete(["8237", 32, 1])
         self.assertEqual(ans['results'], [True, False, False])
 
-    def test_edit_title_change(self):
+    def test_update_title_change(self):
         self.test_add_ok()
-        ans = self.client.edit("8237", {
+        ans = self.client.update("8237", {
             "set": {
                 "TITLE": "changed title",
             }
@@ -71,12 +71,12 @@ class TestCreateInsert(TestBase):
         ans = self.client.get([1])['results'][0]
         self.assertEqual(ans, doc2)
 
-    def test_edit_title_del(self):
+    def test_update_title_del(self):
         self.test_add_ok()
         ans = self.client.query('extra')
         self.assertEqual(ans['results'], [1])
 
-        ans = self.client.edit(1, {
+        ans = self.client.update(1, {
             "del": ["extra", "nonexistent"],
         })
         self.assertEqual(ans, {u'status': u'ok'})

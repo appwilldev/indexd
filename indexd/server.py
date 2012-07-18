@@ -178,7 +178,7 @@ class Connection(object):
 
     @indexdb_set
     @conn_writable
-    def handle_cmd_edit(self, req):
+    def handle_cmd_update(self, req):
         id = req.id
         try:
             doc = self.indexdb.get_document(id)

@@ -40,8 +40,8 @@ class Client(object):
         ids = list(ids)
         return self.do_cmd('delete', ids=ids)
 
-    def edit(self, id, d):
-        return self.do_cmd('edit', id=id, **d)
+    def update(self, id, d):
+        return self.do_cmd('update', id=id, **d)
 
     def do_cmd(self, cmd, **other):
         d = { 'cmd': cmd }
