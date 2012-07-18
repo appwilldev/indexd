@@ -37,7 +37,7 @@ class TestCreateInsert(TestBase):
         self.test_add_ok()
         ans = self.client.query('test')
         self.assertEqual(ans['results'], [1])
-        ans = self.client.retrieve([1])['results'][0]
+        ans = self.client.get([1])['results'][0]
         self.assertEqual(ans, doc)
 
     def test_delete_by_id(self):
@@ -68,7 +68,7 @@ class TestCreateInsert(TestBase):
         self.assertEqual(ans, {u'status': u'ok'})
         ans = self.client.query('change')
         self.assertEqual(ans['results'], [1])
-        ans = self.client.retrieve([1])['results'][0]
+        ans = self.client.get([1])['results'][0]
         self.assertEqual(ans, doc2)
 
     def test_edit_title_del(self):

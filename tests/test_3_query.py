@@ -24,8 +24,8 @@ class TestQuery(TestBase):
         ans = self.client.query('title:water')
         self.assertEqual(ans, q2)
 
-    def test_retrieve(self):
-        ans = self.client.retrieve([123, 0, -34, 1000, "abc"])
+    def test_get(self):
+        ans = self.client.get([123, 0, -34, 1000, "abc"])
         self.assertEqual(ans, {
             u'status': u'ok',
             u'results': [doc123, None, None, doc1000, None],
@@ -36,8 +36,8 @@ class TestNoDBSelected(TestBase):
         ans = self.client.query('water')
         self.assertMessageFind(ans, 'set indexdb first')
 
-    def test_retrieve(self):
-        ans = self.client.retrieve([123, 0, -34, 1000, "abc"])
+    def test_get(self):
+        ans = self.client.get([123, 0, -34, 1000, "abc"])
         self.assertMessageFind(ans, 'set indexdb first')
 
 if __name__ == '__main__':

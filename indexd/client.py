@@ -29,9 +29,9 @@ class Client(object):
     def createdb(self, name, conf):
         return self.do_cmd('createdb', name=name, confdata=conf)
 
-    def retrieve(self, ids):
+    def get(self, ids):
         ids = list(ids)
-        return self.do_cmd('retrieve', ids=ids)
+        return self.do_cmd('get', ids=ids)
 
     def insert(self, doc):
         return self.do_cmd('insert', document=doc)

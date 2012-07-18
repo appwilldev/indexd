@@ -126,7 +126,7 @@ class Connection(object):
         return { 'results': d }
 
     @indexdb_set
-    def handle_cmd_retrieve(self, req):
+    def handle_cmd_get(self, req):
         ret = []
         for id in req.ids:
             try:
