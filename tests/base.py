@@ -37,7 +37,8 @@ class TestBase(unittest.TestCase):
     def setUp(self):
         self.subp = subprocess.Popen(thisdir('runserver'), stderr=open(thisdir('server.log'), 'a'))
         time.sleep(0.5)
-        self.client = client.Client(('', 4000), self.mode)
+        self.client = client.Client(('', 4000))
+        self.client.do_cmd('setmode', value=self.mode)
 
     def tearDown(self):
         self.client.close()

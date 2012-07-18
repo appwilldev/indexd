@@ -40,8 +40,8 @@ class AWIPClientError(AWIPErrorWithCode):
 
 class AWIPHandshakeFailed(AWIPClientError):
     msg = 'Bad Protocol'
-    def __init__(self, line, *args, **kwargs):
-        self.line = line
+    def __init__(self, initial, *args, **kwargs):
+        self.initial = initial
         super(self.__class__, self).__init__(*args, **kwargs)
 
 class AWIPClientDisconnected(AWIPError): pass

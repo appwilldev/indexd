@@ -12,23 +12,9 @@ from exceptions import *
 from request import Request
 import xapiandb
 import util
+from constants import *
 
-LINE_MAX = 1024
 logger = logging.getLogger(__name__)
-supported_modes = ('RDONLY', 'RDWR')
-
-def check_protocol(line):
-    try:
-        protocol, mode = line.rstrip().split(' ', 1)
-    except ValueError:
-        raise AWIPHandshakeFailed(line)
-
-    if protocol != 'AWIP/01':
-        raise AWIPHandshakeFailed(line)
-    if mode not in supported_modes:
-        raise AWIPHandshakeFailed(line, 'Bad mode')
-
-    return protocol, mode
 
 def indexdb_set(func):
     @functools.wraps(func)
@@ -62,13 +48,18 @@ class Connection(object):
     def __init__(self, socket, address):
         logger.info('New connection from %r', address)
         self.addr = address
-        self.fp = socket.makefile()
+        self.sock = socket
         try:
             self.do_handshake()
         except AWIPClientError, e:
-            logger.warn('%r: Bad Handshake line: %r', self.addr, e.line)
-            self.fp.write(str(e) + '\r\n')
-            self.fp.close()
+            logger.warn('%r: Bad Handshake: %r', self.addr, e.initial)
+            socket.close()
+            return
+
+        try:
+            self.handle_request(expect_cmd='setmode')
+        except AWIPError, e:
+            logger.warn('%r: Exception', self.addr, exc_info=True)
             socket.close()
             return
 
@@ -85,19 +76,20 @@ class Connection(object):
                 self.reply(e.todict())
 
     def do_handshake(self):
-        line = self.fp.readline(LINE_MAX)
-        logger.debug('%r: Got handshake line: %r', self.addr, line)
-        self.protocol, self.mode = check_protocol(line)
-        self.reply('200 OK\r\n')
-        logger.info('%r: Handshake complete, protocol=%s, mode=%s', self.addr,
-                    self.protocol, self.mode)
+        initial = util.recvbytes(self.sock, len(INITIAL_BYTES))
+        self.sock.sendall(INITIAL_OK)
+        logger.info('%r: Handshake complete', self.addr)
 
-    def handle_request(self):
-        sreq = util.read_response(self.fp)
+    def handle_request(self, expect_cmd=None):
+        sreq = util.read_response(self.sock)
         logger.debug('%r: Got request: %r', self.addr, sreq)
         if sreq is None:
             raise AWIPClientDisconnected
         req = Request(sreq)
+
+        if expect_cmd and req.cmd != expect_cmd:
+            raise AWIPRequestInvalid('Please set mode first')
+
         method = 'handle_cmd_%s' % req.cmd
         logger.info('%r: %s', self.addr, method)
         f = getattr(self, method, None)
@@ -110,7 +102,7 @@ class Connection(object):
 
     def reply(self, json):
         logger.debug('%r: Sending reply: %r', self.addr, json)
-        util.write_response(self.fp, json)
+        util.write_response(self.sock, json)
 
     def handle_cmd_ping(self, req):
         return {}
@@ -121,6 +113,14 @@ class Connection(object):
             self.indexdb = xapiandb.get_db(req.get_string('value'), mode=self.mode)
         else:
             raise AWIPRequestInvalid('No such setting')
+        return {}
+
+    def handle_cmd_setmode(self, req):
+        v = req.value
+        if v in supported_modes:
+            self.mode = v
+        else:
+            raise AWIPRequestInvalid('Unsupported mode %s' % v)
         return {}
 
     @indexdb_set

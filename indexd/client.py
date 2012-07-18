@@ -4,19 +4,18 @@ import socket
 import json
 from pprint import pprint
 
-from util import read_response, write_response
+from util import read_response, write_response, recvbytes
+from constants import *
 
 class Client(object):
-    def __init__(self, addr, mode):
+    def __init__(self, addr):
         sock = self.sock = socket.socket()
         sock.connect(addr)
-        sock.send('AWIP/01 %s\r\n' % mode)
-        re = sock.recv(1024)
-        self.fp = sock.makefile()
+        sock.send(INITIAL_BYTES)
+        recvbytes(sock, len(INITIAL_OK))
 
     def close(self):
         self.sock.close()
-        self.fp.close()
 
     def ping(self):
         return self.do_cmd('ping')
@@ -47,6 +46,6 @@ class Client(object):
     def do_cmd(self, cmd, **other):
         d = { 'cmd': cmd }
         d.update(other)
-        write_response(self.fp, d)
-        return read_response(self.fp)
+        write_response(self.sock, d)
+        return read_response(self.sock)
 
