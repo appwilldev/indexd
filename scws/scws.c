@@ -62,12 +62,14 @@ static PyObject* scws_call(SCWSObject* self, PyObject *args, PyObject *kwds){
     Py_END_ALLOW_THREADS
 
     ret = PyList_New(0);
-    for(cursor = result = scws_get_result(s); cursor != NULL; cursor = cursor->next){
-	PyList_Append(ret, Py_BuildValue("s#", sentence + cursor->off /* means offset */, cursor->len));
+    while((result = scws_get_result(s)) != NULL){
+	for(cursor = result; cursor != NULL; cursor = cursor->next){
+	    PyList_Append(ret, Py_BuildValue("s#", sentence + cursor->off /* means offset */, cursor->len));
+	}
+	Py_BEGIN_ALLOW_THREADS
+	scws_free_result(result);
+	Py_END_ALLOW_THREADS
     }
-    Py_BEGIN_ALLOW_THREADS
-    scws_free_result(result);
-    Py_END_ALLOW_THREADS
 
     return ret;
 }
