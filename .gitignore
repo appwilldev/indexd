@@ -1,2 +1,4 @@
 db
 tests/server.log
+scws/scws.so
+scws.so.dSYM/
