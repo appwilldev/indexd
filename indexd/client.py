@@ -20,6 +20,9 @@ class Client(object):
     def ping(self):
         return self.do_cmd('ping')
 
+    def setmode(self, mode):
+        return self.do_cmd('setmode', value=mode)
+
     def setdb(self, db):
         return self.do_cmd('setdb', value=db)
 
