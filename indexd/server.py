@@ -4,7 +4,6 @@ import json
 import logging
 import functools
 import ConfigParser
-import io
 
 from gevent.server import StreamServer
 
@@ -148,11 +147,6 @@ class Connection(object):
     def handle_cmd_createdb(self, req):
         name = req.name
         confdata = req.confdata
-        conf = util.CasedConfigParser()
-        try:
-            conf.readfp(io.StringIO(confdata))
-        except (ConfigParser.Error, TypeError), e:
-            raise AWIPRequestInvalid('Invalid config data')
         xapiandb.createdb(name, confdata)
         return {}
 

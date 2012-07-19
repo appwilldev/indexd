@@ -4,6 +4,53 @@ import os
 import unittest
 from base import TestBase, dbdir, config
 
+bad_config1 = '''\
+[config]
+lang = en
+indexing = TITLE, DESCRIPTION, extra
+
+[field_prefix]
+S = TITLE
+XD = DESCRIPTION
+
+[prefix_name]
+S = title
+XD = description
+'''
+
+bad_config2 = '''\
+[config]
+id = id_NUMBER
+lang = en
+indexing = DESCRIPTION, extra
+
+[field_prefix]
+S = TITLE
+XD = DESCRIPTION
+
+[prefix_name]
+S = title
+XD = description
+'''
+
+bad_config3 = '''\
+[config]
+id = id_NUMBER
+lang = en
+indexing = TITLE, DESCRIPTION, extra
+
+[field_prefix]
+S = TITLE
+XD = DESCRIPTION
+EX = extra
+
+[prefix_name]
+S = title
+XD = description
+'''
+
+bad_config4 = '''gabage here :-)'''
+
 class TestCreateReadOnly(TestBase):
     def test_create_with_readonly_mode(self):
         ans = self.client.createdb('test', conf=config)
@@ -34,6 +81,15 @@ class TestCreateFailure(TestBase):
         self.assertMessageFind(ans, 'invalid config')
 
         ans = self.client.createdb(name='test', conf=dict(test='failure'))
+        self.assertMessageFind(ans, 'invalid config')
+
+        ans = self.client.createdb(name='test', conf=bad_config1)
+        self.assertMessageFind(ans, 'invalid config')
+        ans = self.client.createdb(name='test', conf=bad_config2)
+        self.assertMessageFind(ans, 'invalid config')
+        ans = self.client.createdb(name='test', conf=bad_config3)
+        self.assertMessageFind(ans, 'invalid config')
+        ans = self.client.createdb(name='test', conf=bad_config4)
         self.assertMessageFind(ans, 'invalid config')
 
     def test_existing(self):

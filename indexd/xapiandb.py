@@ -1,8 +1,10 @@
 # vim:fileencoding=utf-8:sw=4
 
 import os
+import io
 import re
 import logging
+import ConfigParser
 
 import xapian
 
@@ -29,6 +31,9 @@ def get_db(name, mode):
         _open_dbs[(name, mode)] = db
         return db
 
+def _parse_indexing_fields(val):
+        return [x.strip() for x in val.split(',')]
+
 def _validate_dbname(name):
     if not re.match(r'\w+$', name):
         raise AWIPRequestInvalid('inproper index database name')
@@ -36,13 +41,29 @@ def _validate_dbname(name):
 def _config_file_path(name):
     return os.path.join(_dbpath, name + '.ini')
 
+def _validate_config_file(confdata):
+    conf = util.CasedConfigParser()
+
+    try:
+        conf.readfp(io.StringIO(confdata))
+        conf.get('config', 'id')
+        conf.get('config', 'lang')
+        fields = _parse_indexing_fields(conf.get('config', 'indexing'))
+
+        for k, v in conf.items('field_prefix'):
+            conf.get('prefix_name', k)
+            assert v in fields
+
+    except (ConfigParser.Error, TypeError, AssertionError), e:
+        raise AWIPRequestInvalid('Invalid config data: %r' % e)
+
 def createdb(name, confdata):
     _validate_dbname(name)
     fn = _config_file_path(name)
     if os.path.exists(fn):
         raise AWIPRequestInvalid('Index database "%s" already exists' % name)
 
-    #TODO: validate the config
+    _validate_config_file(confdata)
     with open(fn, 'w') as f:
         f.write(confdata)
 
@@ -122,7 +143,7 @@ class XapianDB(object):
         termgenerator = self.termgenerator
 
 
-        indexingTerm = [x.strip() for x in config.get('config', 'indexing').split(',')]
+        indexingTerm = _parse_indexing_fields(config.get('config', 'indexing'))
 
         xpdoc = xapian.Document()
         termgenerator.set_document(xpdoc)
