@@ -1,6 +1,7 @@
 # vim:fileencoding=utf-8:sw=4
 
 import os
+import re
 import logging
 
 import xapian
@@ -28,10 +29,15 @@ def get_db(name, mode):
         _open_dbs[(name, mode)] = db
         return db
 
+def _validate_dbname(name):
+    if not re.match(r'\w+$', name):
+        raise AWIPRequestInvalid('inproper index database name')
+
 def _config_file_path(name):
     return os.path.join(_dbpath, name + '.ini')
 
 def createdb(name, confdata):
+    _validate_dbname(name)
     fn = _config_file_path(name)
     if os.path.exists(fn):
         raise AWIPRequestInvalid('Index database "%s" already exists' % name)

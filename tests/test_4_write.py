@@ -15,6 +15,13 @@ class TestCreateFailure(TestBase):
         ans = self.client.do_cmd('createdb')
         self.assertMessageFind(ans, 'name')
 
+    def test_baddbname(self):
+        ans = self.client.createdb(name='test-not-valid', conf=config)
+        self.assertMessageFind(ans, 'database name')
+
+        ans = self.client.createdb(name=':isReserved', conf=config)
+        self.assertMessageFind(ans, 'database name')
+
     def test_noconf(self):
         ans = self.client.do_cmd('createdb', name='test')
         self.assertMessageFind(ans, 'confdata')
