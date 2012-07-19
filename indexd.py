@@ -6,6 +6,7 @@ import os
 topdir = os.path.split(__file__)[0]
 sys.path.append(topdir)
 
+import signal
 import argparse
 import logging
 
@@ -13,6 +14,9 @@ import indexd
 import indexd.constants
 import indexd.xapiandb
 import indexd.beautifullog
+
+def on_sigterm(signo, frame):
+    raise KeyboardInterrupt
 
 def main():
     parser = argparse.ArgumentParser(description='An indexing daemon')
@@ -45,6 +49,7 @@ def main():
     server = indexd.IndexServer(('', args.port))
 
     try:
+        signal.signal(signal.SIGTERM, on_sigterm)
         server.start()
     except KeyboardInterrupt:
         logging.info('stopping...')
