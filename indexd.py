@@ -18,6 +18,9 @@ import indexd.beautifullog
 def on_sigterm(signo, frame):
     raise KeyboardInterrupt
 
+def log_level(x):
+    return int(logging.getLevelName(x))
+
 def main():
     parser = argparse.ArgumentParser(description='An indexing daemon')
     parser.add_argument('-p', '--port', metavar='PORT', type=int, required=True,
@@ -32,6 +35,9 @@ def main():
     parser.add_argument('--db', default=None,
                         help='index db directory')
 
+    parser.add_argument('--loglevel', metavar='LEVEL', default=logging.INFO,
+                        type=log_level,
+                        help='SCWS dict file to use for word splitting')
     parser.add_argument('--dict', metavar='FILE', default=None,
                         help='SCWS dict file to use for word splitting')
     parser.add_argument('--rules', metavar='FILE', default=None,
@@ -49,7 +55,7 @@ def main():
     if args.logfile:
         sys.stderr = open(args.logfile, 'a')
 
-    indexd.beautifullog.enable_pretty_logging(logging.DEBUG)
+    indexd.beautifullog.enable_pretty_logging(args.loglevel)
     indexd.xapiandb.set_dbdir(args.db or '.')
     if args.dict:
         indexd.xapiandb.set_scws_data(args.dict, args.rules)
