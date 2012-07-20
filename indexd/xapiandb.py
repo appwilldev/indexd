@@ -14,6 +14,7 @@ from exceptions import *
 
 _open_dbs = {}
 _dbpath = None
+_scws = None
 logger = logging.getLogger(__name__)
 
 def set_dbdir(path):
@@ -81,8 +82,9 @@ class ZhTermGenerator(object):
     stemmer = None
     def __init__(self):
         self.pos = 0
-        if self.scws is None:
-            self.__class__.scws = scws.SCWS('/Users/appwillmini8/tmpfs/scws_data/dict.utf8.xdb', '/usr/local/etc/rules.utf8.ini')
+        global _scws
+        if _scws is None:
+            _scws = scws.SCWS('/Users/appwillmini8/tmpfs/scws_data/dict.utf8.xdb', '/usr/local/etc/rules.utf8.ini')
             logger.info('New SCWS created.')
             self.__class__.stemmer = xapian.Stem('en')
 
@@ -92,7 +94,7 @@ class ZhTermGenerator(object):
     def index_text(self, text, wdf_inc=1, prefix=u''):
         text = text.encode('utf-8')
         pos = self.pos
-        for word in self.scws(text):
+        for word in _scws(text):
             # use English stemmer for Chinese
             word = self.stemmer(word.lower()).decode('utf-8')
             self.doc.add_posting(u'Z' + prefix + word, pos, wdf_inc)
@@ -123,6 +125,7 @@ class XapianDB(object):
 
     def query(self, qs, offset, pagesize):
         self.load_queryparser()
+        qs = self.prepare_query(qs)
         query = self.queryparser.parse_query(qs)
         enquire = xapian.Enquire(self.db)
         enquire.set_query(query)
@@ -147,6 +150,31 @@ class XapianDB(object):
             queryparser.add_prefix(name, prefix)
         queryparser.add_prefix('_id', 'Q')
         logger.info('query parser for %s loaded.', self.name)
+
+    def prepare_query(self, qs):
+        self.load_config()
+        lang = self.config.get('config', 'lang')
+
+        if lang.lower() not in ('zh', 'chinese'):
+            return qs
+
+        qs = qs.encode('utf-8')
+        ret = []
+        for string in qs.split():
+            words = _scws(string)
+            if len(words) == 1:
+                ret.append(words[0])
+            elif len(words) >= 3 and words[1] == ':':
+                l = ['(']
+                l.extend(['%s:%s' % (words[0], x) for x in words[2:]])
+                l.append(')')
+                ret.extend(l)
+            else:
+                ret.append('(')
+                ret.extend(words)
+                ret.append(')')
+        return ' '.join(ret).decode('utf-8')
+
 
     def load_termgenerator(self):
         if self.termgenerator:
