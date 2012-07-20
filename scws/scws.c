@@ -6,19 +6,26 @@ typedef struct {
     scws_t scws;
 } SCWSObject;
 
+#define scws_doc "SCWS Objects.\n\n" \
+    "Initialized with a \"dict\" file path and optional " \
+    "\"rules\" file path and \"charset\" (default is " \
+    "\"utf-8\")."
+
 static int scws_init(SCWSObject* self, PyObject *args, PyObject *kwds){
-    static char *kwlist[] = {"dict", "rules", "charset", NULL};
+    static char *kwlist[] = {"dict", "rules", "charset", "dicttype", NULL};
     char *dict;
     char *rules = NULL;
     char *charset = "utf-8";
+    int dicttype = SCWS_XDICT_XDB;
     scws_t s; /* scws_t is a pointer type.... */
     int st;
 
-    if(!PyArg_ParseTupleAndKeywords(args, kwds, "s|ss", kwlist,
-		&dict, &rules, &charset))
+    if(!PyArg_ParseTupleAndKeywords(args, kwds, "s|ssi", kwlist,
+		&dict, &rules, &charset, &dicttype))
 	return -1;
 
     Py_BEGIN_ALLOW_THREADS
+    self->scws = NULL;
     s = scws_new();
     Py_END_ALLOW_THREADS
     if(!s){
@@ -29,7 +36,7 @@ static int scws_init(SCWSObject* self, PyObject *args, PyObject *kwds){
     self->scws = s;
     Py_BEGIN_ALLOW_THREADS
     scws_set_charset(s, charset); /* fallback to "gbk" if error.... */
-    st = scws_set_dict(s, dict, SCWS_XDICT_XDB);
+    st = scws_set_dict(s, dict, dicttype);
     if(rules)
 	scws_set_rule(s, rules);
     Py_END_ALLOW_THREADS
@@ -64,7 +71,7 @@ static PyObject* scws_call(SCWSObject* self, PyObject *args, PyObject *kwds){
     ret = PyList_New(0);
     while((result = scws_get_result(s)) != NULL){
 	for(cursor = result; cursor != NULL; cursor = cursor->next){
-	    PyList_Append(ret, Py_BuildValue("s#", sentence + cursor->off /* means offset */, cursor->len));
+	    PyList_Append(ret, PyString_FromStringAndSize(sentence + cursor->off /* means offset */, cursor->len));
 	}
 	Py_BEGIN_ALLOW_THREADS
 	scws_free_result(result);
@@ -76,7 +83,8 @@ static PyObject* scws_call(SCWSObject* self, PyObject *args, PyObject *kwds){
 
 static void scws_dealloc(SCWSObject *self){
     Py_BEGIN_ALLOW_THREADS
-    scws_free(self->scws);
+    if(self->scws)
+	scws_free(self->scws);
     Py_END_ALLOW_THREADS
 }
 
@@ -102,7 +110,7 @@ static PyTypeObject SCWSObjectType = {
     0,                        /* tp_setattro       */
     0,                        /* tp_as_buffer      */
     Py_TPFLAGS_DEFAULT,       /* tp_flags          */
-    "SCWS Objects",           /* tp_doc            */
+    scws_doc,                 /* tp_doc            */
     0,                        /* tp_traverse       */
     0,                        /* tp_clear          */
     0,                        /* tp_richcompare    */
@@ -134,4 +142,7 @@ PyMODINIT_FUNC initscws(void){
 
     Py_INCREF(&SCWSObjectType);
     PyModule_AddObject(m, "SCWS", (PyObject *)&SCWSObjectType);
+    PyModule_AddObject(m, "SCWS_XDICT_XDB", PyInt_FromLong(SCWS_XDICT_XDB));
+    PyModule_AddObject(m, "SCWS_XDICT_TXT", PyInt_FromLong(SCWS_XDICT_TXT));
+    PyModule_AddObject(m, "SCWS_XDICT_MEM", PyInt_FromLong(SCWS_XDICT_MEM));
 }
