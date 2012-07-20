@@ -32,6 +32,9 @@ def tojson(d):
 def write_response(sock, s):
     if isinstance(s, dict):
         s = tojson(s)
+    if isinstance(s, unicode):
+        # Python 2.x defaults to 'ascii' :-(
+        s = s.encode('utf-8')
     sock.sendall(pack_netint(len(s)))
     sock.sendall(s)
 
