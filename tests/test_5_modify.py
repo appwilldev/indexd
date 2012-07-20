@@ -66,7 +66,7 @@ class TestCreateInsert(TestBase):
             }
         })
         self.assertEqual(ans, {u'status': u'ok'})
-        ans = self.client.query('change')
+        ans = self.client.query('changing')
         self.assertEqual(ans['results'], [1])
         ans = self.client.get([1])['results'][0]
         self.assertEqual(ans, doc2)
