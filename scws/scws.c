@@ -87,6 +87,7 @@ static void scws_dealloc(SCWSObject *self){
 	scws_free(self->scws);
 	Py_END_ALLOW_THREADS
     }
+    self->ob_type->tp_free(self);
 }
 
 static PyTypeObject SCWSObjectType = {
