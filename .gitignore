@@ -1,4 +1,6 @@
+*.log
 db
-tests/server.log
 scws/scws.so
 scws.so.dSYM/
+test_*.ini
+test_*/
