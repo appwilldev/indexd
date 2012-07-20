@@ -95,7 +95,7 @@ class ZhTermGenerator(object):
         for word in self.scws(text):
             # use English stemmer for Chinese
             word = self.stemmer(word.lower()).decode('utf-8')
-            self.doc.add_posting(prefix + word, pos, wdf_inc)
+            self.doc.add_posting(u'Z' + prefix + word, pos, wdf_inc)
             pos += 1
         self.pos = pos
 
@@ -137,9 +137,12 @@ class XapianDB(object):
 
         self.queryparser = queryparser = xapian.QueryParser()
         lang = config.get('config', 'lang')
-        if lang.lower() not in ('zh', 'chinese'):
+        if lang.lower() in ('zh', 'chinese'):
+            # use English stemmer for Chinese
+            queryparser.set_stemmer(xapian.Stem('en'))
+        else:
             queryparser.set_stemmer(xapian.Stem(lang))
-            queryparser.set_stemming_strategy(queryparser.STEM_SOME)
+        queryparser.set_stemming_strategy(queryparser.STEM_SOME)
         for prefix, name in config.items('prefix_name'):
             queryparser.add_prefix(name, prefix)
         queryparser.add_prefix('_id', 'Q')

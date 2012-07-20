@@ -55,6 +55,8 @@ class TestZh(TestBase):
         self.assertEqual(ans['results'], [2])
         ans = self.client.query('test')
         self.assertEqual(ans['results'], [1])
+        ans = self.client.query('tested')
+        self.assertEqual(ans['results'], [1])
 
     def tearDown(self):
         super(TestZh, self).tearDown()
