@@ -7,6 +7,7 @@ import logging
 import ConfigParser
 
 import xapian
+import scws
 
 import util
 from exceptions import *
@@ -47,7 +48,13 @@ def _validate_config_file(confdata):
     try:
         conf.readfp(io.StringIO(confdata))
         conf.get('config', 'id')
-        conf.get('config', 'lang')
+        lang = conf.get('config', 'lang')
+        if lang.lower() not in ('zh', 'chinese'):
+            try:
+                xapian.Stem(lang)
+            except xapian.InvalidArgumentError:
+                raise AWIPRequestInvalid('unspported language')
+
         fields = _parse_indexing_fields(conf.get('config', 'indexing'))
 
         for k, v in conf.items('field_prefix'):
@@ -68,6 +75,32 @@ def createdb(name, confdata):
         f.write(confdata)
 
     get_db(name, 'RDWR')
+
+class ZhTermGenerator(object):
+    scws = None
+    stemmer = None
+    def __init__(self):
+        self.pos = 0
+        if self.scws is None:
+            self.__class__.scws = scws.SCWS('/Users/appwillmini8/tmpfs/scws_data/dict.utf8.xdb', '/usr/local/etc/rules.utf8.ini')
+            logger.info('New SCWS created.')
+            self.__class__.stemmer = xapian.Stem('en')
+
+    def set_document(self, doc):
+        self.doc = doc
+
+    def index_text(self, text, wdf_inc=1, prefix=u''):
+        text = text.encode('utf-8')
+        pos = self.pos
+        for word in self.scws(text):
+            # use English stemmer for Chinese
+            word = self.stemmer(word.lower()).decode('utf-8')
+            self.doc.add_posting(prefix + word, pos, wdf_inc)
+            pos += 1
+        self.pos = pos
+
+    def increase_termpos(self, delta=100):
+        self.pos += delta
 
 class XapianDB(object):
     queryparser = None
@@ -103,8 +136,10 @@ class XapianDB(object):
         config = self.config
 
         self.queryparser = queryparser = xapian.QueryParser()
-        queryparser.set_stemmer(xapian.Stem(config.get('config', 'lang')))
-        queryparser.set_stemming_strategy(queryparser.STEM_SOME)
+        lang = config.get('config', 'lang')
+        if lang.lower() not in ('zh', 'chinese'):
+            queryparser.set_stemmer(xapian.Stem(lang))
+            queryparser.set_stemming_strategy(queryparser.STEM_SOME)
         for prefix, name in config.items('prefix_name'):
             queryparser.add_prefix(name, prefix)
         queryparser.add_prefix('_id', 'Q')
@@ -115,9 +150,13 @@ class XapianDB(object):
             return
 
         self.load_config()
-        self.termgenerator = xapian.TermGenerator()
-        self.termgenerator.set_stemmer(xapian.Stem(self.config.get('config', 'lang')))
-        logger.info('term generator for %s loaded.', self.name)
+        lang = self.config.get('config', 'lang')
+        if lang.lower() in ('zh', 'chinese'):
+            self.termgenerator = ZhTermGenerator()
+        else:
+            self.termgenerator = xapian.TermGenerator()
+            self.termgenerator.set_stemmer(xapian.Stem(lang))
+        logger.info('term generator for %s (lang=%s) loaded.', self.name, lang)
 
     def load_config(self):
         if self.config:
@@ -141,7 +180,6 @@ class XapianDB(object):
         self.load_termgenerator()
         config = self.config
         termgenerator = self.termgenerator
-
 
         indexingTerm = _parse_indexing_fields(config.get('config', 'indexing'))
 

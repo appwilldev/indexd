@@ -51,6 +51,21 @@ XD = description
 
 bad_config4 = '''gabage here :-)'''
 
+bad_config5 = '''\
+[config]
+id = id_NUMBER
+lang = wtf
+indexing = TITLE, DESCRIPTION, extra
+
+[field_prefix]
+S = TITLE
+XD = DESCRIPTION
+
+[prefix_name]
+S = title
+XD = description
+'''
+
 class TestCreateReadOnly(TestBase):
     def test_create_with_readonly_mode(self):
         ans = self.client.createdb('test', conf=config)
@@ -91,6 +106,8 @@ class TestCreateFailure(TestBase):
         self.assertMessageFind(ans, 'invalid config')
         ans = self.client.createdb(name='test', conf=bad_config4)
         self.assertMessageFind(ans, 'invalid config')
+        ans = self.client.createdb(name='test', conf=bad_config5)
+        self.assertMessageFind(ans, 'unspported lang')
 
     def test_existing(self):
         ans = self.client.createdb(name='db', conf=config)

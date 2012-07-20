@@ -25,7 +25,7 @@ def fromjson(s):
     return json.loads(s, encoding='utf-8')
 
 def tojson(d):
-    return json.dumps(d, ensure_ascii=False).encode('utf-8')
+    return json.dumps(d, ensure_ascii=False)
 
 def write_response(sock, s):
     if isinstance(s, dict):
