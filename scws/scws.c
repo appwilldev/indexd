@@ -24,8 +24,8 @@ static int scws_init(SCWSObject* self, PyObject *args, PyObject *kwds){
 		&dict, &rules, &charset, &dicttype))
 	return -1;
 
-    Py_BEGIN_ALLOW_THREADS
     self->scws = NULL;
+    Py_BEGIN_ALLOW_THREADS
     s = scws_new();
     Py_END_ALLOW_THREADS
     if(!s){
@@ -82,10 +82,11 @@ static PyObject* scws_call(SCWSObject* self, PyObject *args, PyObject *kwds){
 }
 
 static void scws_dealloc(SCWSObject *self){
-    Py_BEGIN_ALLOW_THREADS
-    if(self->scws)
+    if(self->scws){
+	Py_BEGIN_ALLOW_THREADS
 	scws_free(self->scws);
-    Py_END_ALLOW_THREADS
+	Py_END_ALLOW_THREADS
+    }
 }
 
 static PyTypeObject SCWSObjectType = {
