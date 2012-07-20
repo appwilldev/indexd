@@ -24,13 +24,18 @@ def main():
                         help='the port number to listen')
     parser.add_argument('-l', '--logfile', metavar='FILE', default=None,
                         help='where to put the log; default is stderr')
-    parser.add_argument('-d', '--fork', action='store_true',
+    parser.add_argument('--fork', action='store_true',
                         help='fork to background; suppress logging to stderr')
-    parser.add_argument('-m', '--mode', choices=indexd.constants.supported_modes,
+    parser.add_argument('--mode', choices=indexd.constants.supported_modes,
                         nargs='*',
                         help='the mode(s) to run')
     parser.add_argument('--db', default=None,
                         help='index db directory')
+
+    parser.add_argument('--dict', metavar='FILE', default=None,
+                        help='SCWS dict file to use for word splitting')
+    parser.add_argument('--rules', metavar='FILE', default=None,
+                        help='SCWS rules file to use for word splitting')
 
     args = parser.parse_args()
 
@@ -46,6 +51,9 @@ def main():
 
     indexd.beautifullog.enable_pretty_logging(logging.DEBUG)
     indexd.xapiandb.set_dbdir(args.db or '.')
+    if args.dict:
+        indexd.xapiandb.set_scws_data(args.dict, args.rules)
+
     server = indexd.IndexServer(('', args.port))
 
     try:

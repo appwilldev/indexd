@@ -11,6 +11,7 @@ import indexd.xapiandb
 import indexd.beautifullog
 indexd.beautifullog.enable_pretty_logging(logging.DEBUG)
 indexd.xapiandb.set_dbdir(dbdir)
+indexd.xapiandb.set_scws_data('/Users/appwillmini8/tmpfs/scws_data/dict.utf8.xdb', '/usr/local/etc/rules.utf8.ini')
 server = indexd.IndexServer(('', 4000))
 try:
     server.start()

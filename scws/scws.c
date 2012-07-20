@@ -20,7 +20,7 @@ static int scws_init(SCWSObject* self, PyObject *args, PyObject *kwds){
     scws_t s; /* scws_t is a pointer type.... */
     int st;
 
-    if(!PyArg_ParseTupleAndKeywords(args, kwds, "s|ssi", kwlist,
+    if(!PyArg_ParseTupleAndKeywords(args, kwds, "s|zsi", kwlist,
 		&dict, &rules, &charset, &dicttype))
 	return -1;
 

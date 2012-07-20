@@ -21,6 +21,11 @@ def set_dbdir(path):
     global _dbpath
     _dbpath = path
 
+def set_scws_data(dict, rules=None):
+    global _scws_args
+    _scws_args = (dict, rules)
+    logger.info('SCWS parameters set to: %r', _scws_args)
+
 def get_db(name, mode):
     if (name, mode) in _open_dbs:
         logger.info('reuse already open db %s, mode %s', name, mode)
@@ -84,7 +89,9 @@ class ZhTermGenerator(object):
         self.pos = 0
         global _scws
         if _scws is None:
-            _scws = scws.SCWS('/Users/appwillmini8/tmpfs/scws_data/dict.utf8.xdb', '/usr/local/etc/rules.utf8.ini')
+            if _scws_args is None:
+                raise AWIPServerError('SCWS dict and rules not set yet')
+            _scws = scws.SCWS(*_scws_args)
             logger.info('New SCWS created.')
             self.__class__.stemmer = xapian.Stem('en')
 
