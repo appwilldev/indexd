@@ -4,6 +4,8 @@ import json
 import struct
 from ConfigParser import RawConfigParser
 
+from exceptions import *
+
 def parse_netint(b):
     return struct.unpack('!I', b)[0]
 
@@ -39,7 +41,10 @@ def read_response(sock):
         return
 
     length = parse_netint(r)
-    return fromjson(recvbytes(sock, length))
+    data = recvbytes(sock, length)
+    if data is None:
+        raise AWIPClientDisconnected('client disappeared suddenly')
+    return fromjson(data)
 
 class CasedConfigParser(RawConfigParser):
     def optionxform(self, option):

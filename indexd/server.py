@@ -61,6 +61,9 @@ class Connection(object):
 
         try:
             self.handle_request(expect_cmd='setmode')
+        except AWIPClientDisconnected, e:
+            logger.info('%r: %s', self.addr, e)
+            return
         except AWIPError, e:
             logger.warn('%r: Exception', self.addr, exc_info=True)
             socket.close()
@@ -69,10 +72,10 @@ class Connection(object):
         while True:
             try:
                 self.handle_request()
-            except AWIPClientDisconnected:
+            except AWIPClientDisconnected, e:
                 if self.indexdb and self.mode == 'RDWR':
                     self.indexdb.close()
-                logger.info('%r: disconnected', self.addr)
+                logger.info('%r: %s', self.addr, e)
                 break
             except AWIPError, e:
                 logger.warn('%r: Exception', self.addr, exc_info=True)
@@ -84,7 +87,12 @@ class Connection(object):
         logger.info('%r: Handshake complete', self.addr)
 
     def handle_request(self, expect_cmd=None):
-        sreq = util.read_response(self.sock)
+        try:
+            sreq = util.read_response(self.sock)
+        except UnicodeDecodeError:
+            logger.warn('%r: client is sending garbage!', self.addr, exc_info=True)
+            raise AWIPRequestInvalid('bad encoded data')
+
         logger.debug('%r: Got request: %r', self.addr, sreq)
         if sreq is None:
             raise AWIPClientDisconnected
@@ -153,7 +161,7 @@ class Connection(object):
     @indexdb_set
     @conn_writable
     def handle_cmd_insert(self, req):
-        self.indexdb.add_document(req.document)
+        self.indexdb.add_document(req.get_dict('document'))
         return {}
 
     @indexdb_set

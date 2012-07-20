@@ -44,7 +44,12 @@ class AWIPHandshakeFailed(AWIPClientError):
         self.initial = initial
         super(self.__class__, self).__init__(*args, **kwargs)
 
-class AWIPClientDisconnected(AWIPError): pass
+class AWIPClientDisconnected(AWIPError):
+    def __str__(self):
+        if not self.args:
+            return 'client disconnected'
+        else:
+            return AWIPError.__str__(self)
 
 class AWIPRequestInvalid(AWIPClientError): pass
 
