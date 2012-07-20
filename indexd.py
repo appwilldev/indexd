@@ -10,7 +10,7 @@ import signal
 import argparse
 import logging
 
-import indexd
+import indexd.server
 import indexd.constants
 import indexd.xapiandb
 import indexd.beautifullog
@@ -54,7 +54,7 @@ def main():
     if args.dict:
         indexd.xapiandb.set_scws_data(args.dict, args.rules)
 
-    server = indexd.IndexServer(('', args.port))
+    server = indexd.server.IndexServer(('', args.port))
 
     try:
         signal.signal(signal.SIGTERM, on_sigterm)
