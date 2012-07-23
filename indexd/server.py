@@ -164,6 +164,12 @@ class Connection(object):
 
     @indexdb_set
     @conn_writable
+    def handle_cmd_commit(self, req):
+        self.indexdb.commit()
+        return {}
+
+    @indexdb_set
+    @conn_writable
     def handle_cmd_delete(self, req):
         ret = []
         for id in req.ids:

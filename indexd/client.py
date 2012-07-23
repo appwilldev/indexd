@@ -24,6 +24,9 @@ class Client(object):
     def setdb(self, db):
         return self.do_cmd('setdb', value=db)
 
+    def commit(self):
+        return self.do_cmd('commit')
+
     def query(self, qs):
         return self.do_cmd('query', qs=qs, start=0, size=20)
 

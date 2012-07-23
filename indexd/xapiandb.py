@@ -258,3 +258,6 @@ class XapianDB(object):
         del _open_dbs[(self.name, self.mode)]
         self.db.commit()
         self.db.close()
+
+    def commit(self):
+        self.db.commit()
