@@ -111,6 +111,7 @@ class ZhTermGenerator(object):
                 # simply ignore the "damaged" word since no useful word will
                 # be so long
                 logger.warn('Got a long bad word: %r', word)
+                continue
             self.doc.add_posting(u'Z' + prefix + word, pos, wdf_inc)
             pos += 1
         self.pos = pos
