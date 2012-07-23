@@ -141,7 +141,7 @@ PyMODINIT_FUNC initscws(void){
 
     Py_INCREF(&SCWSObjectType);
     PyModule_AddObject(m, "SCWS", (PyObject *)&SCWSObjectType);
-    PyModule_AddObject(m, "SCWS_XDICT_XDB", PyInt_FromLong(SCWS_XDICT_XDB));
-    PyModule_AddObject(m, "SCWS_XDICT_TXT", PyInt_FromLong(SCWS_XDICT_TXT));
-    PyModule_AddObject(m, "SCWS_XDICT_MEM", PyInt_FromLong(SCWS_XDICT_MEM));
+    PyModule_AddIntMacro(m, SCWS_XDICT_XDB);
+    PyModule_AddIntMacro(m, SCWS_XDICT_TXT);
+    PyModule_AddIntMacro(m, SCWS_XDICT_MEM);
 }
