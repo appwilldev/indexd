@@ -43,9 +43,6 @@ static int scws_init(SCWSObject* self, PyObject *args, PyObject *kwds){
 
     if(st < 0){
 	PyErr_SetString(PyExc_EnvironmentError, "failed to set dict");
-	Py_BEGIN_ALLOW_THREADS
-	scws_free(s);
-	Py_END_ALLOW_THREADS
 	return -1;
     }
 
@@ -57,7 +54,7 @@ static PyObject* scws_call(SCWSObject* self, PyObject *args, PyObject *kwds){
     int len;
     scws_t s;
     scws_res_t result, cursor;
-    PyObject *ret;
+    PyObject *ret, *o;
 
     if(!PyArg_ParseTuple(args, "s#", &sentence, &len)){
 	return NULL;
@@ -71,7 +68,9 @@ static PyObject* scws_call(SCWSObject* self, PyObject *args, PyObject *kwds){
     ret = PyList_New(0);
     while((result = scws_get_result(s)) != NULL){
 	for(cursor = result; cursor != NULL; cursor = cursor->next){
-	    PyList_Append(ret, PyString_FromStringAndSize(sentence + cursor->off /* means offset */, cursor->len));
+	    o = PyString_FromStringAndSize(sentence + cursor->off /* means offset */, cursor->len);
+	    PyList_Append(ret, o);
+	    Py_DECREF(o);
 	}
 	Py_BEGIN_ALLOW_THREADS
 	scws_free_result(result);
@@ -83,9 +82,7 @@ static PyObject* scws_call(SCWSObject* self, PyObject *args, PyObject *kwds){
 
 static void scws_dealloc(SCWSObject *self){
     if(self->scws){
-	Py_BEGIN_ALLOW_THREADS
 	scws_free(self->scws);
-	Py_END_ALLOW_THREADS
     }
     self->ob_type->tp_free(self);
 }
