@@ -1,6 +1,5 @@
 CC=clang
-# CFLAGS=-O2 -Wall
-CFLAGS=-I/usr/local/include/scws -I/usr/include/python2.7 -g -Wall
+CFLAGS=-I/usr/local/include/scws -I/usr/include/python2.7 -fPIC -g -Wall
 LDFLAGS=-lpython2.7 -lscws
 
 .PHONY: all clean
