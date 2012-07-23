@@ -103,7 +103,14 @@ class ZhTermGenerator(object):
         pos = self.pos
         for word in _scws(text):
             # use English stemmer for Chinese
-            word = self.stemmer(word.lower()).decode('utf-8')
+            try:
+                word = self.stemmer(word.lower()).decode('utf-8')
+            except UnicodeDecodeError:
+                # scws set a max byte length (SCWS_MAX_ZLEN, 128) on words,
+                # and may cut off in the middle of a multibyte character. We
+                # simply ignore the "damaged" word since no useful word will
+                # be so long
+                logger.warn('Got a long bad word: %r', word)
             self.doc.add_posting(u'Z' + prefix + word, pos, wdf_inc)
             pos += 1
         self.pos = pos
