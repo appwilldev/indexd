@@ -1,6 +1,6 @@
 # vim:fileencoding=utf-8:sw=4
 
-import json
+import ujson as json
 
 class AWIPError(Exception):
     def todict(self):

@@ -1,7 +1,7 @@
 # vim:fileencoding=utf-8:sw=4
 
 import socket
-import json
+import ujson as json
 from pprint import pprint
 
 from util import read_response, write_response, recvbytes

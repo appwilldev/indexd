@@ -1,6 +1,6 @@
 # vim:fileencoding=utf-8:sw=4
 
-import json
+import ujson as json
 import struct
 from ConfigParser import RawConfigParser
 
@@ -24,7 +24,7 @@ def recvbytes(sock, length):
     return ''.join(data)
 
 def fromjson(s):
-    return json.loads(s, encoding='utf-8')
+    return json.loads(s)
 
 def tojson(d):
     return json.dumps(d, ensure_ascii=False)
