@@ -70,5 +70,6 @@ def main(addr, filepath):
     print time.time(), 'all done.'
 
 if __name__ == '__main__':
-    # 15.7s/万
+    # json:  15.7s/万
+    # ujson: 76.11s, 11.61s/万
     main(('', 4002), '/Users/appwillmini8/tmpfs/NMSI_object1_20110304.csv')
