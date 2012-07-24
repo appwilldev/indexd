@@ -77,6 +77,12 @@ def _validate_config_file(confdata):
     except (ConfigParser.Error, TypeError, AssertionError), e:
         raise AWIPRequestInvalid('Invalid config data: %r' % e)
 
+def _extendWithPrefix(l, words, prefix=''):
+    if len(words) >= 3 and words[1] == ':':
+        l.extend(['%s%s:%s' % (prefix, words[0], x) for x in words[2:]])
+    else:
+        l.extend([prefix + x for x in words])
+
 def createdb(name, confdata):
     _validate_dbname(name)
     fn = _config_file_path(name)
@@ -179,22 +185,34 @@ class XapianDB(object):
         ret = []
         for string in qs.split():
             words = _scws(string)
+            try:
+                last_is_op = ret[-1] in ('AND', 'OR')
+            except IndexError:
+                last_is_op = False
             if len(words) == 1:
                 ret.append(words[0])
             elif len(words) >= 3 and words[1] == ':':
-                l = ['(']
-                l.extend(['%s:%s' % (words[0], x) for x in words[2:]])
-                l.append(')')
+                l = []
+                if last_is_op:
+                    l.append('(')
+                _extendWithPrefix(l, words)
+                if last_is_op:
+                    l.append(')')
                 ret.extend(l)
             elif len(words) >= 2 and words[0] == '-':
-                l = ['(']
-                l.extend(['-%s' % x for x in words[1:]])
-                l.append(')')
+                l = []
+                if last_is_op:
+                    l.append('(')
+                _extendWithPrefix(l, words[1:], prefix='-')
+                if last_is_op:
+                    l.append(')')
                 ret.extend(l)
             else:
-                ret.append('(')
+                if last_is_op:
+                    ret.append('(')
                 ret.extend(words)
-                ret.append(')')
+                if last_is_op:
+                    ret.append(')')
         ret = ' '.join(ret).decode('utf-8')
         logger.debug('Query %r parsed to: %r', uqs, ret)
         return ret
