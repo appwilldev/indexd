@@ -19,7 +19,7 @@ def on_sigterm(signo, frame):
     raise KeyboardInterrupt
 
 def log_level(x):
-    return int(logging.getLevelName(x))
+    return int(logging.getLevelName(x.upper()))
 
 def main():
     parser = argparse.ArgumentParser(description='An indexing daemon')
