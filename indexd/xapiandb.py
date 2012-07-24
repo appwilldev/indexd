@@ -186,7 +186,7 @@ class XapianDB(object):
         for string in qs.split():
             words = _scws(string)
             try:
-                last_is_op = ret[-1] in ('AND', 'OR')
+                last_is_op = ret[-1] in ('AND', 'OR', 'NOT')
             except IndexError:
                 last_is_op = False
             if len(words) == 1:
