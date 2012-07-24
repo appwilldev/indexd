@@ -14,8 +14,15 @@ from exceptions import *
 
 _open_dbs = {}
 _dbpath = None
-_scws = None
 logger = logging.getLogger(__name__)
+
+def _scws(sentence):
+    global _scws
+    if _scws_args is None:
+        raise AWIPServerError('SCWS dict and rules not set yet')
+    _scws = scws.SCWS(*_scws_args)
+    logger.info('New SCWS created.')
+    return _scws(sentence)
 
 def set_dbdir(path):
     global _dbpath
@@ -87,12 +94,7 @@ class ZhTermGenerator(object):
     stemmer = None
     def __init__(self):
         self.pos = 0
-        global _scws
-        if _scws is None:
-            if _scws_args is None:
-                raise AWIPServerError('SCWS dict and rules not set yet')
-            _scws = scws.SCWS(*_scws_args)
-            logger.info('New SCWS created.')
+        if self.stemmer is None:
             self.__class__.stemmer = xapian.Stem('en')
 
     def set_document(self, doc):
@@ -166,14 +168,14 @@ class XapianDB(object):
         queryparser.add_prefix('_id', 'Q')
         logger.info('query parser for %s loaded.', self.name)
 
-    def prepare_query(self, qs):
+    def prepare_query(self, uqs):
         self.load_config()
         lang = self.config.get('config', 'lang')
 
         if lang.lower() not in ('zh', 'chinese'):
-            return qs
+            return uqs
 
-        qs = qs.encode('utf-8')
+        qs = uqs.encode('utf-8')
         ret = []
         for string in qs.split():
             words = _scws(string)
@@ -184,12 +186,18 @@ class XapianDB(object):
                 l.extend(['%s:%s' % (words[0], x) for x in words[2:]])
                 l.append(')')
                 ret.extend(l)
+            elif len(words) >= 2 and words[0] == '-':
+                l = ['(']
+                l.extend(['-%s' % x for x in words[1:]])
+                l.append(')')
+                ret.extend(l)
             else:
                 ret.append('(')
                 ret.extend(words)
                 ret.append(')')
-        return ' '.join(ret).decode('utf-8')
-
+        ret = ' '.join(ret).decode('utf-8')
+        logger.debug('Query %r parsed to: %r', uqs, ret)
+        return ret
 
     def load_termgenerator(self):
         if self.termgenerator:
