@@ -64,7 +64,7 @@ def main(addr, filepath):
     print time.time(), 'start indexing...'
     for i, d in enumerate(parse_csv_file(filepath)):
         client.insert(d)
-        if i % 2000 == 1999:
+        if i % 20000 == 19999:
             client.commit()
 
     print time.time(), 'indexing finished.'
@@ -72,4 +72,5 @@ def main(addr, filepath):
     print time.time(), 'all done.'
 
 if __name__ == '__main__':
+    # 7998748 条记录, 32140s, 40.18s/万条
     main(('', 4002), '/Users/appwillmini8/src/data/commens.csv')
