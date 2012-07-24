@@ -27,8 +27,8 @@ class Client(object):
     def commit(self):
         return self.do_cmd('commit')
 
-    def query(self, qs):
-        return self.do_cmd('query', qs=qs, start=0, size=20)
+    def query(self, qs, **kv):
+        return self.do_cmd('query', qs=qs, start=0, size=20, **kv)
 
     def createdb(self, name, conf):
         return self.do_cmd('createdb', name=name, confdata=conf)

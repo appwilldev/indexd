@@ -130,7 +130,8 @@ class Connection(object):
 
     @indexdb_set
     def handle_cmd_query(self, req):
-        results = self.indexdb.query(req.qs, req.start, req.size)
+        sort = req.get_list('sort', [])
+        results = self.indexdb.query(req.qs, req.start, req.size, sort=sort)
         d = [doc.docid for doc in results]
         return { 'results': d }
 

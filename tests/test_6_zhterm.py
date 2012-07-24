@@ -35,7 +35,7 @@ class TestZh(TestBase):
     mode = 'RDWR'
     dbname = 'test_zh'
     def setUp(self):
-        super(TestZh, self).setUp()
+        TestBase.setUp(self)
         ans = self.client.createdb(name=self.dbname, conf=config)
         self.client.setdb(self.dbname)
 
@@ -63,7 +63,7 @@ class TestZh(TestBase):
         self.assertEqual(ans['results'], [1])
 
     def tearDown(self):
-        super(TestZh, self).tearDown()
+        TestBase.tearDown(self)
         os.system("rm -rf '%s'" % os.path.join(dbdir, self.dbname))
         os.unlink(os.path.join(dbdir, '%s.ini' % self.dbname))
 

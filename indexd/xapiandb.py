@@ -45,7 +45,7 @@ def get_db(name, mode):
         _open_dbs[(name, mode)] = db
         return db
 
-def _parse_indexing_fields(val):
+def _parse_csv_fields(val):
         return [x.strip() for x in val.split(',')]
 
 def _validate_dbname(name):
@@ -68,7 +68,7 @@ def _validate_config_file(confdata):
             except xapian.InvalidArgumentError:
                 raise AWIPRequestInvalid('unspported language')
 
-        fields = _parse_indexing_fields(conf.get('config', 'indexing'))
+        fields = _parse_csv_fields(conf.get('config', 'indexing'))
 
         for k, v in conf.items('field_prefix'):
             conf.get('prefix_name', k)
@@ -146,13 +146,25 @@ class XapianDB(object):
             raise AWIPServerError('unknown mode passed to %s' % self.__class__.__name__)
         logger.info('index db %s opened with mode %s.', name, mode)
 
-    def query(self, qs, offset, pagesize):
+    def query(self, qs, offset, pagesize, sort=[]):
         self.load_queryparser()
         qs = self.prepare_query(qs)
         query = self.queryparser.parse_query(qs)
         enquire = xapian.Enquire(self.db)
         enquire.set_query(query)
+        enquire.set_docid_order(enquire.DONT_CARE);
+        if len(sort) == 1:
+            key = self.lookup_sorting_key(sort[0][0])
+            enquire.set_sort_by_value_then_relevance(key, sort[0][1])
+        elif len(sort) > 1:
+            keymaker = xapian.MultiValueKeyMaker()
+            for key, order in sort:
+                keymaker.add_value(self.lookup_sorting_key(key), order)
+            enquire.set_sort_by_key_then_relevance(keymaker, False)
         return enquire.get_mset(offset, pagesize)
+
+    def lookup_sorting_key(self, key):
+        return self.sortingField.index(key)
 
     def load_queryparser(self):
         if self.queryparser:
@@ -234,8 +246,15 @@ class XapianDB(object):
         if self.config:
             return
 
-        conf = self.config = util.CasedConfigParser()
-        conf.readfp(open(_config_file_path(self.name)))
+        config = self.config = util.CasedConfigParser()
+        config.readfp(open(_config_file_path(self.name)))
+
+        self.indexingField = _parse_csv_fields(config.get('config', 'indexing'))
+        try:
+            self.sortingField = _parse_csv_fields(config.get('config', 'sorting'))
+        except ConfigParser.NoOptionError:
+            self.sortingField = []
+
         logger.info('config file for %s loaded.', self.name)
 
     def get_document(self, id):
@@ -253,8 +272,6 @@ class XapianDB(object):
         config = self.config
         termgenerator = self.termgenerator
 
-        indexingTerm = _parse_indexing_fields(config.get('config', 'indexing'))
-
         xpdoc = xapian.Document()
         termgenerator.set_document(xpdoc)
 
@@ -264,13 +281,16 @@ class XapianDB(object):
                 termgenerator.index_text(doc[field], 1, prefix)
 
             # Index fields without prefixes for general search.
-            for field in indexingTerm:
+            for field in self.indexingField:
                 try:
                     termgenerator.index_text(doc[field])
                 except KeyError:
                     # If the key can't be found, just ignore it
                     continue
                 termgenerator.increase_termpos()
+
+            for i, field in enumerate(self.sortingField):
+                xpdoc.add_value(i, str(doc[field]))
 
             xpdoc.set_data(util.tojson(doc))
 

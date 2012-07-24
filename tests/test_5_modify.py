@@ -21,7 +21,7 @@ class TestCreateInsert(TestBase):
     mode = 'RDWR'
     dbname = 'test_insert'
     def setUp(self):
-        super(TestCreateInsert, self).setUp()
+        TestBase.setUp(self)
         ans = self.client.createdb(name=self.dbname, conf=config)
         self.client.setdb(self.dbname)
 
@@ -84,7 +84,7 @@ class TestCreateInsert(TestBase):
         self.assertEqual(ans['results'], [])
 
     def tearDown(self):
-        super(TestCreateInsert, self).tearDown()
+        TestBase.tearDown(self)
         os.system("rm -rf '%s'" % os.path.join(dbdir, self.dbname))
         os.unlink(os.path.join(dbdir, '%s.ini' % self.dbname))
 
