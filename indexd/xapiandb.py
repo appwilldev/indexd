@@ -199,11 +199,11 @@ class XapianDB(object):
                 if last_is_op:
                     l.append(')')
                 ret.extend(l)
-            elif len(words) >= 2 and words[0] == '-':
+            elif len(words) >= 2 and words[0] in '-+':
                 l = []
                 if last_is_op:
                     l.append('(')
-                _extendWithPrefix(l, words[1:], prefix='-')
+                _extendWithPrefix(l, words[1:], prefix=words[0])
                 if last_is_op:
                     l.append(')')
                 ret.extend(l)
