@@ -91,7 +91,11 @@ file = '/home/lilydjwg/data/apps_non_us_store.txt'
 def read_from_file(file):
     with open(file) as f:
         for line in f:
-            yield dict(zip(fields, line[:-1].split('@@@')))
+            if line.endswith('\\\n'):
+                line = line[:-2] + f.readline()[:-1]
+            else:
+                line = line[:-1]
+            yield dict(zip(fields, line.split('@@@')))
 
 def main():
     print time.time(), 'Starting...'
@@ -100,7 +104,8 @@ def main():
     ic.createdb('app_store', config)
     ic.setdb('app_store')
 
-    print time.time(), '%d docuemts...Ready to go!' % N
+    lastt = time.time()
+    print lastt, '%d docuemts...Ready to go!' % N
     try:
         for i, data in enumerate(read_from_file(file)):
             # avoid those bad data will kill the connection
@@ -110,7 +115,8 @@ def main():
                 assert ret['status'] == 'ok', ret['message']
             if i and i % 2000 == 0:
                 ic.commit()
-                print time.time(), '%8d/%d done.' % (i, N)
+                print '%4.2f: %8d/%d done.' % (time.time() - lastt, i, N)
+                lastt = time.time()
     except AssertionError:
         from cli import repl
         repl(locals())
