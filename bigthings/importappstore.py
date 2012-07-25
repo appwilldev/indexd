@@ -115,7 +115,7 @@ def main():
                 assert ret['status'] == 'ok', ret['message']
             if i and i % 2000 == 0:
                 ic.commit()
-                print '%4.2f: %8d/%d done.' % (time.time() - lastt, i, N)
+                print '%7.2f: %8d/%d done.' % (time.time() - lastt, i, N)
                 lastt = time.time()
     except AssertionError:
         from cli import repl
