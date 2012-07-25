@@ -302,9 +302,13 @@ class XapianDB(object):
 
             for i, (field, isnumber) in enumerate(self.sortingField.items()):
                 if isnumber:
-                    value = xapian.sortable_serialise(doc[field])
+                    value = xapian.sortable_serialise(float(doc[field]))
                 else:
-                    value = str(doc[field])
+                    f = doc[field]
+                    if isinstance(f, unicode):
+                        value = f.encode('utf-8')
+                    else:
+                        value = str(f)
                 xpdoc.add_value(i, value)
 
             xpdoc.set_data(util.tojson(doc))
