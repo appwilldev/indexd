@@ -5,6 +5,7 @@ import io
 import re
 import logging
 import ConfigParser
+from collections import OrderedDict
 
 import xapian
 import scws
@@ -164,7 +165,7 @@ class XapianDB(object):
         return enquire.get_mset(offset, pagesize)
 
     def lookup_sorting_key(self, key):
-        return self.sortingField.index(key)
+        return self.sortingFieldList.index(key)
 
     def load_queryparser(self):
         if self.queryparser:
@@ -250,10 +251,19 @@ class XapianDB(object):
         config.readfp(open(_config_file_path(self.name)))
 
         self.indexingField = _parse_csv_fields(config.get('config', 'indexing'))
+
+        sortingField = self.sortingField = OrderedDict()
+        sortingFieldList = self.sortingFieldList = []
         try:
-            self.sortingField = _parse_csv_fields(config.get('config', 'sorting'))
+            for f in _parse_csv_fields(config.get('config', 'sorting')):
+                if f.startswith('number:'):
+                    f = f[7:]
+                    sortingField[f] = True
+                else:
+                    sortingField[f] = False
+                sortingFieldList.append(f)
         except ConfigParser.NoOptionError:
-            self.sortingField = []
+            pass
 
         logger.info('config file for %s loaded.', self.name)
 
@@ -289,8 +299,12 @@ class XapianDB(object):
                     continue
                 termgenerator.increase_termpos()
 
-            for i, field in enumerate(self.sortingField):
-                xpdoc.add_value(i, str(doc[field]))
+            for i, (field, isnumber) in enumerate(self.sortingField.items()):
+                if isnumber:
+                    value = xapian.sortable_serialise(doc[field])
+                else:
+                    value = str(doc[field])
+                xpdoc.add_value(i, value)
 
             xpdoc.set_data(util.tojson(doc))
 

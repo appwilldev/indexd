@@ -9,7 +9,7 @@ config = '''\
 id = id_NUMBER
 lang = en
 indexing = TITLE, DESCRIPTION, extra
-sorting = id_NUMBER, TITLE, sortme
+sorting = id_NUMBER, TITLE, sortme, number:n
 
 [field_prefix]
 S = TITLE
@@ -26,18 +26,21 @@ doc1 = {
     'DESCRIPTION': 'This is just a document for testing purpose :-)',
     'sortme': '3',
     'extra': 'some extra text',
+    'n': 12,
 }
 doc2 = {
     'id_NUMBER': 1,
     'TITLE': 'first',
     'DESCRIPTION': 'This is just another document for testing purpose :-)',
     'sortme': '3',
+    'n': 2,
 }
 doc3 = {
     'id_NUMBER': 7,
     'TITLE': 'thirdd',
     'DESCRIPTION': 'This is just another document for testing purpose :-)',
     'sortme': '1',
+    'n': 101,
 }
 
 class TestCreateSorting(TestBase):
@@ -62,6 +65,8 @@ class TestCreateSorting(TestBase):
         self.assertEqual(set(ans['results']), {1, 2, 3})
         ans = self.client.query('document', sort=[('TITLE', True)])
         self.assertEqual(ans['results'], [3, 1, 2])
+        ans = self.client.query('document', sort=[('n', False)])
+        self.assertEqual(ans['results'], [2, 1, 3])
         ans = self.client.query('document', sort=[('sortme', True), ('TITLE', False)])
         self.assertEqual(ans['results'], [2, 1, 3])
         ans = self.client.query('document', sort=[('sortme', True), ('TITLE', True)])
