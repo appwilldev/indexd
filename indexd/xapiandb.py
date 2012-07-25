@@ -72,6 +72,7 @@ def _validate_config_file(confdata):
         fields = _parse_csv_fields(conf.get('config', 'indexing'))
 
         for k, v in conf.items('field_prefix'):
+            assert k != 'Q', 'reserved prefix'
             conf.get('prefix_name', k)
             assert v in fields
 
