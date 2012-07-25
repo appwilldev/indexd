@@ -90,9 +90,11 @@ file = '/home/lilydjwg/data/apps_non_us_store.txt'
 
 def read_from_file(file):
     with open(file) as f:
-        for line in f:
+        it = iter(f)
+        while True:
+            line = next(it)
             if line.endswith('\\\n'):
-                line = line[:-2] + f.readline()[:-1]
+                line = line[:-2] + next(it)[:-1]
             else:
                 line = line[:-1]
             yield dict(zip(fields, line.split('@@@')))
