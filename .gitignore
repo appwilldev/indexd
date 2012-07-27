@@ -4,3 +4,4 @@ scws/scws.so
 scws.so.dSYM/
 test_*.ini
 test_*/
+data/
