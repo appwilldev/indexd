@@ -8,13 +8,15 @@ lang = en
 indexing = TITLE, DESCRIPTION
 # fields added for sorting; position matters
 sorting = xxx, yyy
+# When given, only store those
+# storing = TITLE, xxx
 
 # 索引时的前缀映射
 [field_prefix]
-S = TITLE
+S = TITLE, SUBTITLE
 XD = DESCRIPTION
 
 # 查询语句使用的前缀映射
 [prefix_name]
-S = title
+S = title, t
 XD = description

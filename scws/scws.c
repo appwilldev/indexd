@@ -21,29 +21,29 @@ static int scws_init(SCWSObject* self, PyObject *args, PyObject *kwds){
     int st;
 
     if(!PyArg_ParseTupleAndKeywords(args, kwds, "s|zsi", kwlist,
-		&dict, &rules, &charset, &dicttype))
-	return -1;
+                &dict, &rules, &charset, &dicttype))
+        return -1;
 
     self->scws = NULL;
     Py_BEGIN_ALLOW_THREADS
     s = scws_new();
     Py_END_ALLOW_THREADS
     if(!s){
-	/* the doc says it's because insufficient memory */
-	PyErr_SetString(PyExc_MemoryError, "failed to init the scws struct");
-	return -1;
+        /* the doc says it's because insufficient memory */
+        PyErr_SetString(PyExc_MemoryError, "failed to init the scws struct");
+        return -1;
     }
     self->scws = s;
     Py_BEGIN_ALLOW_THREADS
     scws_set_charset(s, charset); /* fallback to "gbk" if error.... */
     st = scws_set_dict(s, dict, dicttype);
     if(rules)
-	scws_set_rule(s, rules);
+        scws_set_rule(s, rules);
     Py_END_ALLOW_THREADS
 
     if(st < 0){
-	PyErr_SetString(PyExc_EnvironmentError, "failed to set dict");
-	return -1;
+        PyErr_SetString(PyExc_EnvironmentError, "failed to set dict");
+        return -1;
     }
 
     return 0;
@@ -57,7 +57,7 @@ static PyObject* scws_call(SCWSObject* self, PyObject *args, PyObject *kwds){
     PyObject *ret, *o;
 
     if(!PyArg_ParseTuple(args, "s#", &sentence, &len)){
-	return NULL;
+        return NULL;
     }
 
     s = self->scws;
@@ -67,14 +67,14 @@ static PyObject* scws_call(SCWSObject* self, PyObject *args, PyObject *kwds){
 
     ret = PyList_New(0);
     while((result = scws_get_result(s)) != NULL){
-	for(cursor = result; cursor != NULL; cursor = cursor->next){
-	    o = PyString_FromStringAndSize(sentence + cursor->off /* means offset */, cursor->len);
-	    PyList_Append(ret, o);
-	    Py_DECREF(o);
-	}
-	Py_BEGIN_ALLOW_THREADS
-	scws_free_result(result);
-	Py_END_ALLOW_THREADS
+        for(cursor = result; cursor != NULL; cursor = cursor->next){
+            o = PyString_FromStringAndSize(sentence + cursor->off /* means offset */, cursor->len);
+            PyList_Append(ret, o);
+            Py_DECREF(o);
+        }
+        Py_BEGIN_ALLOW_THREADS
+        scws_free_result(result);
+        Py_END_ALLOW_THREADS
     }
 
     return ret;
@@ -82,7 +82,7 @@ static PyObject* scws_call(SCWSObject* self, PyObject *args, PyObject *kwds){
 
 static void scws_dealloc(SCWSObject *self){
     if(self->scws){
-	scws_free(self->scws);
+        scws_free(self->scws);
     }
     self->ob_type->tp_free(self);
 }
@@ -133,11 +133,11 @@ PyMODINIT_FUNC initscws(void){
     PyObject* m;
 
     if (PyType_Ready(&SCWSObjectType) < 0)
-	return;
+        return;
 
     m = Py_InitModule3("scws", NULL, "A simple Python binding for SCWS.");
     if (m == NULL)
-	return;
+        return;
 
     Py_INCREF(&SCWSObjectType);
     PyModule_AddObject(m, "SCWS", (PyObject *)&SCWSObjectType);
