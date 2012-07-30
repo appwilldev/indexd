@@ -160,8 +160,11 @@ class XapianDB(object):
             enquire.set_sort_by_value_then_relevance(key, sort[0][1])
         elif len(sort) > 1:
             keymaker = xapian.MultiValueKeyMaker()
-            for key, order in sort:
-                keymaker.add_value(self.lookup_sorting_key(key), order)
+            try:
+                for key, order in sort:
+                    keymaker.add_value(self.lookup_sorting_key(key), order)
+            except ValueError: # too many values to unpack
+                raise AWIPRequestInvalid('bad value for parameter "sort"')
             enquire.set_sort_by_key_then_relevance(keymaker, False)
         return enquire.get_mset(offset, pagesize)
 
