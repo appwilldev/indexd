@@ -3,6 +3,7 @@
 ##  不可以空白字符开始或者结束
 
 [config]
+# id will convert to string if not already
 id = id_NUMBER
 lang = en
 indexing = TITLE, DESCRIPTION

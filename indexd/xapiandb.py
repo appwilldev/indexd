@@ -148,6 +148,10 @@ class XapianDB(object):
             raise AWIPServerError('unknown mode passed to %s' % self.__class__.__name__)
         logger.info('index db %s opened with mode %s.', name, mode)
 
+    def get_idfield(self):
+        self.load_config()
+        return self.config.get('config', 'id')
+
     def query(self, qs, offset, pagesize, sort=[]):
         self.load_queryparser()
         qs = self.prepare_query(qs)

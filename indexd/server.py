@@ -131,8 +131,17 @@ class Connection(object):
     @indexdb_set
     def handle_cmd_query(self, req):
         sort = req.get_list('sort', [])
+        type = req.get_string('type', u'_id')
         results = self.indexdb.query(req.qs, req.start, req.size, sort=sort)
-        d = [doc.docid for doc in results]
+        if type == '_id':
+            d = [doc.docid for doc in results]
+        elif type == 'id':
+            idname = self.indexdb.get_idfield()
+            d = [util.fromjson(doc.document.get_data())[idname] for doc in results]
+        elif type == 'doc':
+            d = [util.fromjson(doc.document.get_data()) for doc in results]
+        else:
+            raise AWIPRequestInvalid('bad value for "type"')
         return { 'results': d }
 
     @indexdb_set

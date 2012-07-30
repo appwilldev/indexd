@@ -31,7 +31,7 @@ doc1 = {
 doc2 = {
     'id_NUMBER': 1,
     'TITLE': 'first',
-    'DESCRIPTION': 'This is just another document for testing purpose :-)',
+    'DESCRIPTION': 'This is just a second document for testing purpose :-)',
     'sortme': '3',
     'n': 2,
 }
@@ -43,7 +43,16 @@ doc3 = {
     'n': 101,
 }
 
-class TestCreateSorting(TestBase):
+class TestNoDBSelected(TestBase):
+    def test_simpleQuery(self):
+        ans = self.client.query('water')
+        self.assertMessageFind(ans, 'set indexdb first')
+
+    def test_get(self):
+        ans = self.client.get([123, 0, -34, 1000, "abc"])
+        self.assertMessageFind(ans, 'set indexdb first')
+
+class TestQueryAndSorting(TestBase):
     mode = 'RDWR'
     dbname = 'test_sorting'
     def setUp(self):
@@ -58,6 +67,15 @@ class TestCreateSorting(TestBase):
         self.assertEqual(ans, {u'status': u'ok'})
         ans = self.client.insert(doc3)
         self.assertEqual(ans, {u'status': u'ok'})
+
+    def test_query(self):
+        self.insert_docs()
+        ans = self.client.query('title:second')
+        self.assertEqual(ans['results'], [1])
+        ans = self.client.query('title:second', type='id')
+        self.assertEqual(ans['results'], [4])
+        ans = self.client.query('title:second', type='doc')
+        self.assertEqual(ans['results'], [doc1])
 
     def test_query_with_sorting(self):
         self.insert_docs()
