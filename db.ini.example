@@ -1,6 +1,8 @@
+# vim:se ft=dosini:
 # 域名的限制
 ##  不可包含字符 ,
 ##  不可以空白字符开始或者结束
+##  不要使用 _ 开头
 
 [config]
 # id will convert to string if not already
@@ -9,7 +11,7 @@ lang = en
 indexing = TITLE, DESCRIPTION
 # fields added for sorting; position matters
 sorting = xxx, yyy
-# When given, only store those
+# When given, only store those. can be empty
 # storing = TITLE, xxx
 
 # 索引时的前缀映射

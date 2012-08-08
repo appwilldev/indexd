@@ -47,7 +47,10 @@ def get_db(name, mode):
         return db
 
 def _parse_csv_fields(val):
-        return [x.strip() for x in val.split(',')]
+    ret = [x.strip() for x in val.split(',')]
+    if ret == ['']:
+        ret = []
+    return ret
 
 def _validate_dbname(name):
     if not re.match(r'\w+$', name):
@@ -259,6 +262,10 @@ class XapianDB(object):
         config.readfp(open(_config_file_path(self.name)))
 
         self.indexingField = _parse_csv_fields(config.get('config', 'indexing'))
+        try:
+            self.storingField = _parse_csv_fields(config.get('config', 'storing'))
+        except ConfigParser.NoOptionError:
+            self.storingField = None
 
         sortingField = self.sortingField = OrderedDict()
         sortingFieldList = self.sortingFieldList = []
@@ -318,9 +325,14 @@ class XapianDB(object):
                         value = str(f)
                 xpdoc.add_value(i, value)
 
-            xpdoc.set_data(util.tojson(doc))
-
             idfield = config.get('config', 'id')
+            if self.storingField is None:
+                data = doc
+            else:
+                data = {k: doc[k] for k in self.storingField}
+                data['_id'] = idfield
+            xpdoc.set_data(util.tojson(data))
+
             idterm = u"Q" + unicode(doc[idfield])
             if len(idterm) > 240:
                 raise AWIPRequestInvalid('value for id field "%s" too long; please redesign your document structure' % idfield)
