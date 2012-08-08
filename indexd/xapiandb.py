@@ -72,12 +72,13 @@ def _validate_config_file(confdata):
             except xapian.InvalidArgumentError:
                 raise AWIPRequestInvalid('unspported language')
 
-        fields = _parse_csv_fields(conf.get('config', 'indexing'))
+        fields = set(_parse_csv_fields(conf.get('config', 'indexing')))
 
         for k, v in conf.items('field_prefix'):
             assert k != 'Q', 'reserved prefix'
             conf.get('prefix_name', k)
-            assert v in fields
+            vs = _parse_csv_fields(v)
+            assert set(vs) <= fields
 
     except (ConfigParser.Error, TypeError, AssertionError), e:
         raise AWIPRequestInvalid('Invalid config data: %r' % e)
@@ -193,8 +194,9 @@ class XapianDB(object):
         else:
             queryparser.set_stemmer(xapian.Stem(lang))
         queryparser.set_stemming_strategy(queryparser.STEM_SOME)
-        for prefix, name in config.items('prefix_name'):
-            queryparser.add_prefix(name, prefix)
+        for prefix, names in self.prefix_name.items():
+            for name in names:
+                queryparser.add_prefix(name, prefix)
         queryparser.add_prefix('_id', 'Q')
         logger.info('query parser for %s loaded.', self.name)
 
@@ -280,6 +282,11 @@ class XapianDB(object):
         except ConfigParser.NoOptionError:
             pass
 
+        self.field_prefix = {k: _parse_csv_fields(v) for k, v in
+                             config.items('field_prefix')}
+        self.prefix_name = {k: _parse_csv_fields(v) for k, v in
+                             config.items('prefix_name')}
+
         logger.info('config file for %s loaded.', self.name)
 
     def get_document(self, id):
@@ -302,8 +309,9 @@ class XapianDB(object):
 
         try:
             # Index fields with prefixes.
-            for prefix, field in config.items('field_prefix'):
-                termgenerator.index_text(doc[field], 1, prefix)
+            for prefix, fields in self.field_prefix.items():
+                for field in fields:
+                    termgenerator.index_text(doc[field], 1, prefix)
 
             # Index fields without prefixes for general search.
             for field in self.indexingField:
