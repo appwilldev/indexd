@@ -38,7 +38,7 @@ def get_db(name, mode):
     if (name, mode) in _open_dbs:
         logger.info('reuse already open db %s, mode %s', name, mode)
         db = _open_dbs[(name, mode)]
-        db.reopen()
+        db.db.reopen()
     else:
         try:
             db = XapianDB(name, mode)
