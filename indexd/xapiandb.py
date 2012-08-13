@@ -37,14 +37,15 @@ def set_scws_data(dict, rules=None):
 def get_db(name, mode):
     if (name, mode) in _open_dbs:
         logger.info('reuse already open db %s, mode %s', name, mode)
-        return _open_dbs[(name, mode)]
+        db = _open_dbs[(name, mode)]
+        db.reopen()
     else:
         try:
             db = XapianDB(name, mode)
         except xapian.DatabaseOpeningError, e:
             raise AWIPOperationError(str(e))
         _open_dbs[(name, mode)] = db
-        return db
+    return db
 
 def _parse_csv_fields(val):
     ret = [x.strip() for x in val.split(',')]
@@ -317,6 +318,7 @@ class XapianDB(object):
             for field in self.indexingField:
                 try:
                     termgenerator.index_text(doc[field])
+                    logger.debug('indexed: %s: %s', field, doc[field])
                 except KeyError:
                     # If the key can't be found, just ignore it
                     continue
@@ -338,8 +340,9 @@ class XapianDB(object):
                 data = doc
             else:
                 data = {k: doc[k] for k in self.storingField}
-                data['_id'] = idfield
+                data['_id'] = doc[idfield]
             xpdoc.set_data(util.tojson(data))
+            logger.debug('data is: %s', data)
 
             idterm = u"Q" + unicode(doc[idfield])
             if len(idterm) > 240:
@@ -358,7 +361,8 @@ class XapianDB(object):
     def close(self):
         logger.info('db %s closed (mode=%s)', self.name, self.mode)
         del _open_dbs[(self.name, self.mode)]
-        self.db.commit()
+        if self.mode == 'RDWR':
+            self.db.commit()
         self.db.close()
 
     def commit(self):
