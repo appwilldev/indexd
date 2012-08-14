@@ -1,0 +1,98 @@
+= 协议 =
+== 握手 ==
+消息以 \r\n 结束
+协议名为：Appwill Indexing Protocol
+协议版本号为两个字节
+回应状态码为三字节，其后有一空格
+
+客户端发送 AWTP02
+服务器回复 AWTPOK
+
+== 协议正文 ==
+所有消息构成为：网络序四字节长度，其后为 JSON 字符串，编码为 UTF-8。
+
+=== 设置模式 ===
+此操作需要在最开始进行。
+
+  "cmd": "setmode",
+  "value": mode
+
+=== 索引选取 ===
+
+  "cmd": "setdb",
+  "value": indexdbName
+
+回应：
+
+  "status": "ok"
+
+  "status": "error",
+  "code": errorCode,
+  "message": errorMessage
+
+=== 查询 ===
+
+  "cmd": "query",
+  "qs": queryString,
+  "start": start,
+  "size": size,
+  "return": type
+
+其中 return 是可选的，默认为 "_id"。
+* _id: 使用 xapian 的 ID，为 32 位无符号整数
+* id: 使用创建数据库时指定的文档 id
+* doc: 返回整个存储的文档
+
+回应：
+
+  "status": "ok",
+  "results": [data]
+
+=== 获取内容 ===
+
+  "cmd": "get",
+  "ids": [ids]
+
+回应：
+
+  "status": "ok",
+  "results": [data]
+
+如果对应的 id 不存在或者错误，相应的 data 位置为 null
+
+=== 建新数据库 ===
+
+  "cmd": "createdb",
+  "name": dbName,
+  "confdata": strINIConfig
+
+=== 操作索引数据 ===
+==== 添加 ====
+
+  "cmd": "insert",
+  "data": data
+
+==== 删除 ====
+
+  "cmd": "delete",
+  "ids": [ids]
+
+其中 ids 可以为数值 ID 或者 document 对应的 term ID（配置文件 config 节 id 项指定的域
+
+回应：
+
+  "status": "ok",
+  "results": [trueOrFalse]
+
+如果指定数值 ID 并且不存在结果对应位置为 False，如果指定 term ID，不管 docuement 是否存在都返回 True。
+数据库出错导致删除失败对应位置返回 False。
+
+==== 修改 ====
+
+  "cmd": "update",
+  "id": id,
+  "set": partialDoc,
+  "del": partialDoc,
+
+= TODO =
+* (?) 批量添加索引
