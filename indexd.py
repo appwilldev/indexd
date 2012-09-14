@@ -37,7 +37,7 @@ def main():
 
     parser.add_argument('--loglevel', metavar='LEVEL', default=logging.INFO,
                         type=log_level,
-                        help='SCWS dict file to use for word splitting')
+                        help='logging level, default is INFO')
     parser.add_argument('--dict', metavar='FILE', default=None,
                         help='SCWS dict file to use for word splitting')
     parser.add_argument('--rules', metavar='FILE', default=None,
