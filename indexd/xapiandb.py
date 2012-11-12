@@ -335,7 +335,7 @@ class XapianDB(object):
                         value = str(f)
                 xpdoc.add_value(i, value)
 
-            idfield = config.get('config', 'id')
+            self.idfield = idfield = config.get('config', 'id')
             if self.storingField is None:
                 data = doc
             else:
