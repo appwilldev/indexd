@@ -136,7 +136,7 @@ class Connection(object):
         if type == '_id':
             d = [doc.docid for doc in results]
         elif type == 'id':
-            d = [util.fromjson(doc.document.get_data())[self.indexdb.idfield] for doc in results]
+            d = [util.fromjson(doc.document.get_data())[self.indexdb.get_idfield()] for doc in results]
         elif type == 'doc':
             d = [util.fromjson(doc.document.get_data()) for doc in results]
         else:
