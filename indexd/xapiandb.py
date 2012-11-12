@@ -240,7 +240,7 @@ class XapianDB(object):
                 ret.extend(words)
                 if last_is_op:
                     ret.append(')')
-        ret = ' '.join(ret).decode('utf-8')
+        ret = ' '.join(ret).decode('utf-8').lower()
         logger.debug('Query %r parsed to: %r', uqs, ret)
         return ret
 

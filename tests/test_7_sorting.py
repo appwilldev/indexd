@@ -70,6 +70,14 @@ class TestQueryAndSorting(TestBase):
 
     def test_query(self):
         self.insert_docs()
+        # should be case-insensitive
+        ans = self.client.query('test')
+        self.assertEqual(set(ans['results']), {1, 2, 3})
+        ans = self.client.query('tEsT')
+        self.assertEqual(set(ans['results']), {1, 2, 3})
+        ans = self.client.query('TesTing')
+        self.assertEqual(set(ans['results']), {1, 2, 3})
+
         ans = self.client.query('title:second')
         self.assertEqual(ans['results'], [1])
         ans = self.client.query('title:second', type='id')

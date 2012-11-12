@@ -55,6 +55,11 @@ class TestZh(TestBase):
         self.assertEqual(ans['results'], [2])
         ans = self.client.query('test')
         self.assertEqual(ans['results'], [1])
+        # should be case-insensitive
+        ans = self.client.query('Test')
+        self.assertEqual(ans['results'], [1])
+        ans = self.client.query('TEST')
+        self.assertEqual(ans['results'], [1])
         ans = self.client.query('tested')
         self.assertEqual(ans['results'], [1])
         ans = self.client.query('title:文本索引')
