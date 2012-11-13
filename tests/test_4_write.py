@@ -6,6 +6,7 @@ from base import TestBase, dbdir, config
 
 bad_config1 = '''\
 [config]
+version = 1.1
 lang = en
 indexing = TITLE, DESCRIPTION, extra
 
@@ -20,6 +21,7 @@ XD = description
 
 bad_config2 = '''\
 [config]
+version = 1.1
 id = id_NUMBER
 lang = en
 indexing = DESCRIPTION, extra
@@ -35,6 +37,7 @@ XD = description
 
 bad_config3 = '''\
 [config]
+version = 1.1
 id = id_NUMBER
 lang = en
 indexing = TITLE, DESCRIPTION, extra
@@ -53,6 +56,7 @@ bad_config4 = '''gabage here :-)'''
 
 bad_config5 = '''\
 [config]
+version = 1.1
 id = id_NUMBER
 lang = wtf
 indexing = TITLE, DESCRIPTION, extra
@@ -68,6 +72,7 @@ XD = description
 
 bad_config6 = '''\
 [config]
+version = 1.1
 id = id_NUMBER
 lang = en
 indexing = TITLE, DESCRIPTION, extra

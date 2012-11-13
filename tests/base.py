@@ -6,6 +6,7 @@ import os
 thisDir = os.path.split(__file__)[0]
 config = '''\
 [config]
+version = 1.1
 id = id_NUMBER
 lang = en
 indexing = TITLE, DESCRIPTION, extra

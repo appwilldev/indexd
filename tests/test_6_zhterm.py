@@ -6,6 +6,7 @@ from base import TestBase, dbdir
 
 config = '''\
 [config]
+version = 1.1
 id = id
 lang = zh
 indexing = TITLE, DESCRIPTION, extra
