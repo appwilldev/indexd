@@ -4,15 +4,13 @@ import os
 import unittest
 from base import TestBase, dbdir
 
-# NOTE: TestQueryAndSorting should not pass when version < 1.1
-
 config = '''\
 [config]
 version = 1.1
 id = id_NUMBER
 lang = en
 indexing = TITLE, DESCRIPTION, extra
-sorting = id_NUMBER, TITLE, sortme, number:n
+storing =
 
 [field_prefix]
 S = TITLE
@@ -46,18 +44,9 @@ doc3 = {
     'n': 101,
 }
 
-class TestNoDBSelected(TestBase):
-    def test_simpleQuery(self):
-        ans = self.client.query('water')
-        self.assertMessageFind(ans, 'set indexdb first')
-
-    def test_get(self):
-        ans = self.client.get([123, 0, -34, 1000, "abc"])
-        self.assertMessageFind(ans, 'set indexdb first')
-
-class TestQueryAndSorting(TestBase):
+class TestQuery(TestBase):
     mode = 'RDWR'
-    dbname = 'test_sorting'
+    dbname = 'test_nostore'
     def setUp(self):
         TestBase.setUp(self)
         ans = self.client.createdb(name=self.dbname, conf=config)
@@ -73,33 +62,15 @@ class TestQueryAndSorting(TestBase):
 
     def test_query(self):
         self.insert_docs()
-        # should be case-insensitive
-        ans = self.client.query('test')
-        self.assertEqual(set(ans['results']), {1, 2, 3})
-        ans = self.client.query('tEsT')
-        self.assertEqual(set(ans['results']), {1, 2, 3})
-        ans = self.client.query('TesTing')
-        self.assertEqual(set(ans['results']), {1, 2, 3})
 
         ans = self.client.query('title:second')
+        self.assertEqual(ans['results'], [1])
+        ans = self.client.query('title:second', type='_id')
         self.assertEqual(ans['results'], [1])
         ans = self.client.query('title:second', type='id')
         self.assertEqual(ans['results'], [4])
         ans = self.client.query('title:second', type='doc')
-        self.assertEqual(ans['results'], [doc1])
-
-    def test_query_with_sorting(self):
-        self.insert_docs()
-        ans = self.client.query('document')
-        self.assertEqual(set(ans['results']), {1, 2, 3})
-        ans = self.client.query('document', sort=[('TITLE', True)])
-        self.assertEqual(ans['results'], [3, 1, 2])
-        ans = self.client.query('document', sort=[('n', False)])
-        self.assertEqual(ans['results'], [2, 1, 3])
-        ans = self.client.query('document', sort=[('sortme', True), ('TITLE', False)])
-        self.assertEqual(ans['results'], [2, 1, 3])
-        ans = self.client.query('document', sort=[('sortme', True), ('TITLE', True)])
-        self.assertEqual(ans['results'], [1, 2, 3])
+        self.assertEqual(ans['results'], [{'id_NUMBER': 4}])
 
     def tearDown(self):
         TestBase.tearDown(self)

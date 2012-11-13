@@ -5,6 +5,8 @@
 ##  不要使用 _ 开头
 
 [config]
+# new index should use this
+version = 1.1
 # id will convert to string if not already
 id = id_NUMBER
 lang = en

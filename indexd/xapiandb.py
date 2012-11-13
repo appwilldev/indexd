@@ -154,8 +154,19 @@ class XapianDB(object):
         logger.info('index db %s opened with mode %s.', name, mode)
 
     def get_idfield(self):
+        ver = self.get_version()
+        if ver >= 1.09:
+            return self.config.get('config', 'id')
+        else:
+            return '_id'
+
+    def get_version(self):
         self.load_config()
-        return self.config.get('config', 'id')
+        try:
+            ver = float(self.config.get('config', 'version'))
+        except (ConfigParser.NoOptionError, ValueError):
+            ver = 1.0
+        return ver
 
     def query(self, qs, offset, pagesize, sort=[]):
         self.load_queryparser()
@@ -336,11 +347,15 @@ class XapianDB(object):
                 xpdoc.add_value(i, value)
 
             idfield = config.get('config', 'id')
+            ver = self.get_version()
             if self.storingField is None:
                 data = doc
             else:
                 data = {k: doc[k] for k in self.storingField}
-                data['_id'] = doc[idfield]
+                if ver >= 1.09:
+                    data[idfield] = doc[idfield]
+                else:
+                    data['_id'] = doc[idfield]
             xpdoc.set_data(util.tojson(data))
             logger.debug('data is: %s', data)
 
