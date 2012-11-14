@@ -1,6 +1,10 @@
-CC=clang
-CFLAGS=-I/usr/local/include/scws -I/usr/include/python2.7 -fPIC -g -Wall -I/usr/local/include/python2.7
-LDFLAGS=-lpython2.7 -lscws
+SCWS_PREFIX=/usr/local
+SCWS_INC=$(SCWS_PREFIX)/include
+SCWS_LIB=$(SCWS_PREFIX)/lib
+PYTHON_CONFIG=python-config
+
+CFLAGS=-I$(SCWS_INC)/scws $(shell $(PYTHON_CONFIG) --includes) -fPIC -g -Wall
+LDFLAGS=$(shell $(PYTHON_CONFIG) --ldflags) -lscws -L$(SCWS_LIB)
 
 .PHONY: all clean
 
@@ -10,4 +14,4 @@ scws.so: scws.c
 	$(CC) -shared $(CFLAGS) $(LDFLAGS) $+ -o $@
 
 clean:
-	-rm *.o
+	-rm scws.so
