@@ -1,0 +1,71 @@
+#!/bin/bash -e
+
+setup_env='export LD_LIBRARY_PATH=$HOME/lib
+export PATH=$HOME/bin:$PATH
+'
+
+mkdir -p ~/soft
+cd ~/soft
+eval $setup_env
+
+install_python () {
+  wget -c http://python.org/ftp/python/2.7.3/Python-2.7.3.tar.xz
+  tar Jxf Python-2.7.3.tar.xz
+  cd Python-2.7.3
+  ./configure --prefix=$HOME --enable-shared --with-threads --enable-ipv6 --with-system-ffi --with-system-expat
+  make
+  make install
+}
+
+[[ $(python -c 'import sys; print ".".join(map(str, sys.version_info[0:2]))') != '2.7' ]] && install_python
+
+# Install distribute
+wget -c http://pypi.python.org/packages/source/d/distribute/distribute-0.6.30.tar.gz
+tar zxf distribute-0.6.30.tar.gz
+cd distribute-0.6.30
+python setup.py install --user
+cd ..
+
+easy_install --user ujson
+
+wget -c https://github.com/downloads/SiteSupport/gevent/gevent-1.0rc1.tar.gz
+tar zxf gevent-1.0rc1.tar.gz
+cd gevent-1.0rc1/
+python setup.py install --user
+cd ..
+
+wget -c http://oligarchy.co.uk/xapian/1.2.12/xapian-core-1.2.12.tar.gz
+tar xzf xapian-core-1.2.12.tar.gz
+cd xapian-core-1.2.12/
+./configure --prefix=$HOME
+make
+make install
+cd ..
+
+wget -c http://oligarchy.co.uk/xapian/1.2.12/xapian-bindings-1.2.12.tar.gz
+tar xzf xapian-bindings-1.2.12.tar.gz
+cd xapian-bindings-1.2.12/
+./configure --prefix=$HOME --with-python
+make
+make install
+cd ..
+
+wget -c http://www.ftphp.com/scws/down/scws-1.2.0.tar.bz2
+tar xjf scws-1.2.0.tar.bz2
+cd scws-1.2.0/
+./configure --prefix=$HOME
+make
+make install
+cd ..
+
+wget -c http://www.ftphp.com/scws/down/scws-dict-chs-utf8.tar.bz2
+tar jxf scws-dict-chs-utf8.tar.bz2
+
+git clone git@plan9.appdao.com:server/indexd.git
+cd indexd/scws/
+make SCWS_PREFIX=$HOME
+cp scws.so $HOME/.local/lib/python$(python -c 'import sys; print ".".join(map(str, sys.version_info[0:2]))')/site-packages
+cd ../..
+
+echo "$setup_env" >> ~/.profile
+echo "All done."
