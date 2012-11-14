@@ -1,5 +1,5 @@
 #include<Python.h>
-#include<scws.h>
+#include<scws/scws.h>
 
 typedef struct {
     PyObject_HEAD

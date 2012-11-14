@@ -3,7 +3,7 @@ SCWS_INC=$(SCWS_PREFIX)/include
 SCWS_LIB=$(SCWS_PREFIX)/lib
 PYTHON_CONFIG=python-config
 
-CFLAGS=-I$(SCWS_INC)/scws $(shell $(PYTHON_CONFIG) --includes) -fPIC -g -Wall
+CFLAGS=-I$(SCWS_INC) $(shell $(PYTHON_CONFIG) --includes) -fPIC -g -Wall
 LDFLAGS=$(shell $(PYTHON_CONFIG) --ldflags) -lscws -L$(SCWS_LIB)
 
 .PHONY: all clean
