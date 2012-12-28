@@ -205,7 +205,7 @@ class XapianDB(object):
             queryparser.set_stemmer(xapian.Stem('en'))
         else:
             queryparser.set_stemmer(xapian.Stem(lang))
-        queryparser.set_stemming_strategy(queryparser.STEM_SOME)
+        queryparser.set_stemming_strategy(queryparser.STEM_ALL_Z)
         for prefix, names in self.prefix_name.items():
             for name in names:
                 queryparser.add_prefix(name, prefix)
