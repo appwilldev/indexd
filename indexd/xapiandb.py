@@ -323,7 +323,10 @@ class XapianDB(object):
             # Index fields with prefixes.
             for prefix, fields in self.field_prefix.items():
                 for field in fields:
-                    termgenerator.index_text(doc[field], 1, prefix)
+                    try:
+                        termgenerator.index_text(doc[field], 1, prefix)
+                    except KeyError:
+                        continue
 
             # Index fields without prefixes for general search.
             for field in self.indexingField:
