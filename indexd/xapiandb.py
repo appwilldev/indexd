@@ -15,6 +15,7 @@ from exceptions import *
 
 _open_dbs = {}
 _dbpath = None
+_scws_args = None
 logger = logging.getLogger(__name__)
 
 def _scws(sentence):
