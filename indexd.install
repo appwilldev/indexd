@@ -66,6 +66,7 @@ cd indexd/scws/
 make SCWS_PREFIX=$HOME
 cp scws.so $HOME/.local/lib/python$(python -c 'import sys; print ".".join(map(str, sys.version_info[0:2]))')/site-packages
 cd ../..
+ln -s ~/soft/indexd/indexd $HOME/.local/lib/python$(python -c 'import sys; print ".".join(map(str, sys.version_info[0:2]))')/site-packages
 
 echo "$setup_env" >> ~/.profile
 echo "All done."
