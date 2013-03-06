@@ -1,0 +1,1 @@
+python indexd.py -p 4040 --dict ~/soft/dict.utf8.xdb --rules ~/etc/rules.utf8.ini --loglevel debug
