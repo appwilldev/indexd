@@ -1,7 +1,7 @@
 *.log
 *.pyc
+*.so
 db
-scws/scws.so
 scws.so.dSYM/
 test_*.ini
 test_*/
