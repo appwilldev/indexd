@@ -1,4 +1,5 @@
 *.log
+*.pyc
 db
 scws/scws.so
 scws.so.dSYM/
