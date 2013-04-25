@@ -1,4 +1,4 @@
-SCWS_PREFIX=/usr/local
+SCWS_PREFIX?=/usr/local
 SCWS_INC=$(SCWS_PREFIX)/include
 SCWS_LIB=$(SCWS_PREFIX)/lib
 PYTHON_CONFIG=python-config
