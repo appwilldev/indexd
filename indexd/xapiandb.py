@@ -116,6 +116,7 @@ class ZhTermGenerator(object):
         self.doc = doc
 
     def index_text(self, text, wdf_inc=1, prefix=u''):
+        if not text: return
         text = text.encode('utf-8')
         pos = self.pos
         for word in _scws(text):
@@ -173,6 +174,10 @@ class XapianDB(object):
     def query(self, qs, offset, pagesize, sort=[]):
         self.load_queryparser()
         qs = self.prepare_query(qs)
+        # the FLAG_BOOLEAN_ANY_CASE is disabled by defaut,
+        # so keep the opwords as ALLCAPS please!
+        # here can give the flag as the second arg for parse_query
+        # see http://xapian.org/docs/apidoc/html/classXapian_1_1QueryParser.html
         query = self.queryparser.parse_query(qs)
         enquire = xapian.Enquire(self.db)
         enquire.set_query(query)
@@ -201,6 +206,8 @@ class XapianDB(object):
         self.load_config()
         config = self.config
 
+        # the FLAG_BOOLEAN_ANY_CASE is disabled by defaut,
+        # so keep the opwords as ALLCAPS please!
         self.queryparser = queryparser = xapian.QueryParser()
         lang = config.get('config', 'lang')
         if lang.lower() in ('zh', 'chinese'):
