@@ -226,11 +226,14 @@ class XapianDB(object):
         ret = []
         for string in qs.split():
             words = _scws(string)
+            words = [w.lower() for w in words]
             try:
                 last_is_op = ret[-1] in ('AND', 'OR', 'NOT')
             except IndexError:
                 last_is_op = False
             if len(words) == 1:
+                words[0] =  words[0].upper() \
+                    if words[0].upper() in ('AND', 'OR', 'NOT') else words[0].lower()
                 ret.append(words[0])
             elif len(words) >= 3 and words[1] == ':':
                 l = []
@@ -254,7 +257,9 @@ class XapianDB(object):
                 ret.extend(words)
                 if last_is_op:
                     ret.append(')')
-        ret = ' '.join(ret).decode('utf-8').lower()
+            #endif
+        #endfor
+        ret = ' '.join(ret).decode('utf-8') #.lower(), do not lower OPS!
         logger.debug('Query %r parsed to: %r', uqs, ret)
         return ret
 
@@ -325,6 +330,7 @@ class XapianDB(object):
         try:
             # Index fields with prefixes.
             for prefix, fields in self.field_prefix.items():
+                print "========= %s | %s" % (prefix, fields)
                 for field in fields:
                     try:
                         termgenerator.index_text(doc[field], 1, prefix)

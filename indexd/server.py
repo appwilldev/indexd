@@ -71,8 +71,9 @@ class Connection(object):
             try:
                 self.handle_request()
             except AWIPClientDisconnected, e:
-                if self.indexdb and self.mode == 'RDWR':
-                    self.indexdb.close()
+                #maybe used by another Connection, do not close it!
+                #if self.indexdb and self.mode == 'RDWR':
+                #    self.indexdb.close()
                 logger.info('%r: %s', self.addr, e)
                 break
             except AWIPError, e:
