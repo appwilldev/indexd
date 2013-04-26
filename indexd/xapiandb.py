@@ -232,8 +232,8 @@ class XapianDB(object):
             except IndexError:
                 last_is_op = False
             if len(words) == 1:
-                words[0] =  words[0].upper() \
-                    if words[0].upper() in ('AND', 'OR', 'NOT') else words[0].lower()
+                if words[0] in ('and', 'or', 'not'):
+                    words[0] =  words[0].upper()
                 ret.append(words[0])
             elif len(words) >= 3 and words[1] == ':':
                 l = []
@@ -330,7 +330,6 @@ class XapianDB(object):
         try:
             # Index fields with prefixes.
             for prefix, fields in self.field_prefix.items():
-                print "========= %s | %s" % (prefix, fields)
                 for field in fields:
                     try:
                         termgenerator.index_text(doc[field], 1, prefix)
