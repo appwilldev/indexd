@@ -59,6 +59,7 @@ def _validate_dbname(name):
         raise AWIPRequestInvalid('inproper index database name')
 
 def _config_file_path(name):
+    logger.debug("config file path: %s", os.path.join(_dbpath, name + '.ini'))
     return os.path.join(_dbpath, name + '.ini')
 
 def _validate_config_file(confdata):
@@ -176,6 +177,7 @@ class XapianDB(object):
         enquire = xapian.Enquire(self.db)
         enquire.set_query(query)
         enquire.set_docid_order(enquire.DONT_CARE);
+        # sort is [["key", Bool],...]
         if len(sort) == 1:
             key = self.lookup_sorting_key(sort[0][0])
             enquire.set_sort_by_value_then_relevance(key, sort[0][1])

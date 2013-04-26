@@ -1,0 +1,16 @@
+# -*- org -*-
+#+title: Indexd
+
+* deps:
+  - python 2.7.x
+  - xapian
+    - http://xapian.org
+    - http://getting-started-with-xapian.readthedocs.org/en/latest/index.html
+  - scws
+    - http://www.ftphp.com/scws/down/scws-1.2.0.tar.bz2
+    - http://www.ftphp.com/scws/down/scws-dict-chs-utf8.tar.bz2
+  - python modules:
+    - xapian bindings for python
+    - ujson
+* run server
+  see runserver.example

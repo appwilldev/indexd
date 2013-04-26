@@ -1,16 +1,12 @@
-#
-# deps:
-#   - ujson
-#   - xapian
-#   - scws
-#
+#!/bin/sh
+#-*- sh -*-
+
+# scws installed here
+export SCWS_PREFIX=$HOME/programs/scws
+export LD_LIBRARY_PATH=$SCWS_PREFIX/lib
 
 # run command:
-
-export SCWS_PREFIX=$HOME/programs/scws
-export LD_LIBRARY_PATH=$HOME/programs/scws/lib
-
-python indexd.py -p 4040 \
+python indexd.py $@ -p 4040 \
                  --dict  $SCWS_PREFIX/dict.utf8.xdb \
                  --rules $SCWS_PREFIX/etc/rules.utf8.ini \
                  --loglevel debug
