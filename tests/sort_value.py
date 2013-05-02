@@ -1,3 +1,4 @@
+#-*- encoding: utf-8 -*-
 import os
 import sys
 import time
@@ -14,10 +15,10 @@ from indexd import client
 c = client.Client(('', 4040))
 c.setmode("RDWR")
 print c.ping()
-print c.setdb("test")
+print c.setdb("link")
 #print c.createdb("testdb", None)
-print c.insert({"fullname":123, "title":"b","content":"e", "s":1, "ss":2,"sss":3})
-print c.insert({"fullname":124, "title":"b","content":"d", "s":2, "ss":1,"sss":2})
-print c.insert({"fullname":125, "title":"b","content":"c", "s":3, "ss":3,"sss":1})
-print c.query("title:b or content:e", type="id", sort=[['ss',False],["sss",False]])
+#print c.insert({"fullname":123, "title":"b","content":"e", "s":1, "ss":2,"sss":3})
+#print c.insert({"fullname":124, "title":"b","content":"d", "s":2, "ss":1,"sss":2})
+#print c.insert({"fullname":125, "title":"b","content":"c121_de", "s":3, "ss":3,"sss":1})
+print c.query(u"恭喜你获得6元兑换码", type="id")
 #time.sleep(20)

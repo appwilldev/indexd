@@ -18,6 +18,12 @@ _dbpath = None
 _scws_args = None
 logger = logging.getLogger(__name__)
 
+def isep(array, sep):
+    m = len(array)
+    for i, x in enumerate(array):
+        yield x
+        if i+1 < m: yield sep
+
 def _scws(sentence):
     global _scws
     if _scws_args is None:
@@ -234,6 +240,7 @@ class XapianDB(object):
         for string in qs.split():
             words = _scws(string)
             words = [w.lower() for w in words]
+            words = [x for x in isep(words, 'AND')]
             try:
                 last_is_op = ret[-1] in ('AND', 'OR', 'NOT')
             except IndexError:
