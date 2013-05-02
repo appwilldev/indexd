@@ -94,9 +94,12 @@ def _validate_config_file(confdata):
 
 def _extendWithPrefix(l, words, prefix=''):
     if len(words) >= 3 and words[1] == ':':
-        l.extend(['%s%s:%s' % (prefix, words[0], x) for x in words[2:]])
+        extends = ['%s%s:%s' % (prefix, words[0], x) for x in words[2:]]
     else:
-        l.extend([prefix + x for x in words])
+        extends = [prefix + x for x in words]
+    #endif
+    #l.extend([x for x in isep(extends, 'AND')])
+    l.extend(extends)
 
 def createdb(name, confdata):
     _validate_dbname(name)
@@ -215,6 +218,7 @@ class XapianDB(object):
         # the FLAG_BOOLEAN_ANY_CASE is disabled by defaut,
         # so keep the opwords as ALLCAPS please!
         self.queryparser = queryparser = xapian.QueryParser()
+        self.queryparser.set_default_op(xapian.Query.OP_AND) # default to and
         lang = config.get('config', 'lang')
         if lang.lower() in ('zh', 'chinese'):
             # use English stemmer for Chinese
@@ -240,7 +244,6 @@ class XapianDB(object):
         for string in qs.split():
             words = _scws(string)
             words = [w.lower() for w in words]
-            words = [x for x in isep(words, 'AND')]
             try:
                 last_is_op = ret[-1] in ('AND', 'OR', 'NOT')
             except IndexError:
@@ -251,26 +254,23 @@ class XapianDB(object):
                 ret.append(words[0])
             elif len(words) >= 3 and words[1] == ':':
                 l = []
-                if last_is_op:
-                    l.append('(')
+                if last_is_op: l.append('(')
                 _extendWithPrefix(l, words)
-                if last_is_op:
-                    l.append(')')
-                ret.extend(l)
+                if last_is_op: l.append(')')
+                ret.append(" ".join(l))
             elif len(words) >= 2 and words[0] in '-+':
                 l = []
-                if last_is_op:
-                    l.append('(')
+                if last_is_op: l.append('(')
                 _extendWithPrefix(l, words[1:], prefix=words[0])
-                if last_is_op:
-                    l.append(')')
-                ret.extend(l)
+                if last_is_op: l.append(')')
+                ret.append(" ".join(l))
             else:
-                if last_is_op:
-                    ret.append('(')
-                ret.extend(words)
-                if last_is_op:
-                    ret.append(')')
+                l = []
+                if last_is_op: l.append('(')
+                #l.extend([x for x in isep(words, 'AND')]) # join by AND after genterm
+                l.extend(words)
+                if last_is_op: l.append(')')
+                ret.append(" ".join(l))
             #endif
         #endfor
         ret = ' '.join(ret).decode('utf-8') #.lower(), do not lower OPS!
