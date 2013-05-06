@@ -18,7 +18,7 @@
 \def\docver{{\tiny v1}}
 
 \title{Xapian and Indexd}
-\subtitle{A search service based on Xapian \docver}
+\subtitle{Introduction to a search service based on Xapian \docver}
 \author{KDr2}
 
 \begin{document}
@@ -27,9 +27,9 @@
   \maketitle{}
   \date
 
-  \section{大纲}
+  \section{Outline}
   \begin{frame}
-    \frametitle{大纲}
+    \frametitle{Outline}
     \setcounter{tocdepth}{2}
     \tableofcontents
   \end{frame}
@@ -63,6 +63,7 @@
             {\tiny (OR/AND/AND\_NOT)}
           \item Maybe {\tiny (AND\_MAYBE)}
           \item Near and Phrase
+          \item Sort/Range with Values
           \end{itemize}
         \item QueryParser \vfill
           \begin{itemize}
@@ -97,7 +98,7 @@
     \item Gevent-Based \vfill
     \item use SCWS as TermGenerator \vfill
     \item Multi Databases Support \vfill
-    \item Map docid and model-id (using Document Data)
+    \item Mapping docid with model-id (using Document Data)
     \end{itemize}
   \end{frame}
 
@@ -106,7 +107,8 @@
     Do these works if you take interest: \vfill
     \begin{itemize}
     \item A Real Stemer for Chinese
-    \item A Better TermGenerator
+    \item A Better TermGenerator \\
+      {\tiny or a better dict-db for SCWS}
     \item Complex Queries support
     \item Redis-Compitable Protocol
     \item TestCases, Benchmarks
@@ -137,7 +139,7 @@
     \end{itemize}
   \end{frame}
 
-  \section{结束}
+  \section{END}
   \begin{frame}
     \begin{center}
       {\tiny 有兴趣的可根据此提纲自己学习，如有需要可聚众讨论}\\\vfill
