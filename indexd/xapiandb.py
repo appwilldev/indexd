@@ -141,7 +141,7 @@ class ZhTermGenerator(object):
                 continue
             self.doc.add_posting(u'Z' + prefix + word, pos, wdf_inc)
             pos += 1
-        self.pos = pos
+        self.pos = pos+11
 
     def increase_termpos(self, delta=100):
         self.pos += delta
@@ -194,7 +194,8 @@ class XapianDB(object):
         # sort is [["key", Bool],...]
         if len(sort) == 1:
             key = self.lookup_sorting_key(sort[0][0])
-            enquire.set_sort_by_value_then_relevance(key, sort[0][1])
+            #enquire.set_sort_by_value_then_relevance(key, sort[0][1])
+            enquire.set_sort_by_relevance_then_value(key, sort[0][1])
         elif len(sort) > 1:
             keymaker = xapian.MultiValueKeyMaker()
             try:
@@ -202,7 +203,8 @@ class XapianDB(object):
                     keymaker.add_value(self.lookup_sorting_key(key), order)
             except ValueError: # too many values to unpack
                 raise AWIPRequestInvalid('bad value for parameter "sort"')
-            enquire.set_sort_by_key_then_relevance(keymaker, False)
+            #enquire.set_sort_by_key_then_relevance(keymaker, False)
+            enquire.set_sort_by_relevance_then_key(keymaker, False)
         return enquire.get_mset(offset, pagesize)
 
     def lookup_sorting_key(self, key):
@@ -268,7 +270,8 @@ class XapianDB(object):
                 l = []
                 if last_is_op: l.append('(')
                 #l.extend([x for x in isep(words, 'AND')]) # join by AND after genterm
-                l.extend(words)
+                #l.extend(words)
+                l.append(" NEAR ".join(words))
                 if last_is_op: l.append(')')
                 ret.append(" ".join(l))
             #endif
