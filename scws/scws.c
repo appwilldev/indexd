@@ -18,7 +18,6 @@ static int scws_init(SCWSObject* self, PyObject *args, PyObject *kwds){
     char *charset = "utf-8";
     int dicttype = SCWS_XDICT_XDB;
     scws_t s; /* scws_t is a pointer type.... */
-    int st;
 
     if(!PyArg_ParseTupleAndKeywords(args, kwds, "s|zsi", kwlist,
                 &dict, &rules, &charset, &dicttype))
@@ -36,15 +35,25 @@ static int scws_init(SCWSObject* self, PyObject *args, PyObject *kwds){
     self->scws = s;
     Py_BEGIN_ALLOW_THREADS
     scws_set_charset(s, charset); /* fallback to "gbk" if error.... */
-    st = scws_set_dict(s, dict, dicttype);
+
+    char *d_str, *p_str, *q_str;
+    int dmode;
+    d_str = dict;
+    do {
+        if ((p_str = strchr(d_str, ':')) != NULL) *p_str++ = '\0';
+        dmode = dicttype; // SCWS_XDICT_XDB; the default type
+        if ((q_str = strrchr(d_str, '.')) != NULL && !strcasecmp(q_str, ".txt"))
+            dmode = SCWS_XDICT_TXT;
+        dmode = scws_add_dict(s, d_str, dmode);
+        if(dmode < 0){
+            PyErr_SetString(PyExc_EnvironmentError, "failed to set dict");
+            return -1;
+        }
+    } while ((d_str = p_str) != NULL);
+
     if(rules)
         scws_set_rule(s, rules);
     Py_END_ALLOW_THREADS
-
-    if(st < 0){
-        PyErr_SetString(PyExc_EnvironmentError, "failed to set dict");
-        return -1;
-    }
 
     return 0;
 }
