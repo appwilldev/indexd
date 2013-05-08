@@ -194,8 +194,8 @@ class XapianDB(object):
         # sort is [["key", Bool],...]
         if len(sort) == 1:
             key = self.lookup_sorting_key(sort[0][0])
-            #enquire.set_sort_by_value_then_relevance(key, sort[0][1])
-            enquire.set_sort_by_relevance_then_value(key, sort[0][1])
+            enquire.set_sort_by_value_then_relevance(key, sort[0][1])
+            #enquire.set_sort_by_relevance_then_value(key, sort[0][1])
         elif len(sort) > 1:
             keymaker = xapian.MultiValueKeyMaker()
             try:
