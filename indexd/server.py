@@ -133,7 +133,7 @@ class Connection(object):
     def handle_cmd_query(self, req):
         sort = req.get_list('sort', [])
         type = req.get_string('type', u'_id')
-        results = self.indexdb.query(req.qs, req.start, req.size, sort=sort)
+        results, kws = self.indexdb.query(req.qs, req.start, req.size, sort=sort)
         if type == '_id':
             d = [doc.docid for doc in results]
         elif type == 'id':
@@ -142,7 +142,7 @@ class Connection(object):
             d = [util.fromjson(doc.document.get_data()) for doc in results]
         else:
             raise AWIPRequestInvalid('bad value for "type"')
-        return { 'results': d }
+        return { 'results': d , 'keywords': kws or []}
 
     @indexdb_set
     def handle_cmd_get(self, req):

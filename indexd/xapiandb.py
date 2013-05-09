@@ -182,7 +182,7 @@ class XapianDB(object):
 
     def query(self, qs, offset, pagesize, sort=[]):
         self.load_queryparser()
-        qs = self.prepare_query(qs)
+        qs, kws = self.prepare_query(qs)
         # the FLAG_BOOLEAN_ANY_CASE is disabled by defaut,
         # so keep the opwords as ALLCAPS please!
         # here can give the flag as the second arg for parse_query
@@ -205,7 +205,7 @@ class XapianDB(object):
                 raise AWIPRequestInvalid('bad value for parameter "sort"')
             #enquire.set_sort_by_key_then_relevance(keymaker, False)
             enquire.set_sort_by_relevance_then_key(keymaker, False)
-        return enquire.get_mset(offset, pagesize)
+        return enquire.get_mset(offset, pagesize), kws
 
     def lookup_sorting_key(self, key):
         return self.sortingFieldList.index(key)
@@ -235,6 +235,7 @@ class XapianDB(object):
         logger.info('query parser for %s loaded.', self.name)
 
     def prepare_query(self, uqs):
+        kws = []
         self.load_config()
         lang = self.config.get('config', 'lang')
 
@@ -253,10 +254,14 @@ class XapianDB(object):
             if len(words) == 1:
                 if words[0] in ('and', 'or', 'not'):
                     words[0] =  words[0].upper()
+                else:
+                    kws.append(words[0])
+                #endif
                 ret.append(words[0])
             elif len(words) >= 3 and words[1] == ':':
                 l = []
                 if last_is_op: l.append('(')
+                kws.extend(words[2:])
                 _extendWithPrefix(l, words)
                 if last_is_op: l.append(')')
                 ret.append(" ".join(l))
@@ -264,6 +269,7 @@ class XapianDB(object):
                 l = []
                 if last_is_op: l.append('(')
                 _extendWithPrefix(l, words[1:], prefix=words[0])
+                kws.extend(words[1:])
                 if last_is_op: l.append(')')
                 ret.append(" ".join(l))
             else:
@@ -271,6 +277,7 @@ class XapianDB(object):
                 if last_is_op: l.append('(')
                 #l.extend([x for x in isep(words, 'AND')]) # join by AND after genterm
                 #l.extend(words)
+                kws.extend(words)
                 l.append(" NEAR ".join(words))
                 if last_is_op: l.append(')')
                 ret.append(" ".join(l))
@@ -278,7 +285,7 @@ class XapianDB(object):
         #endfor
         ret = ' '.join(ret).decode('utf-8') #.lower(), do not lower OPS!
         logger.debug('Query %r parsed to: %r', uqs, ret)
-        return ret
+        return ret, kws
 
     def load_termgenerator(self):
         if self.termgenerator:
