@@ -4,6 +4,7 @@
 typedef struct {
     PyObject_HEAD
     scws_t scws;
+    int ignore;
 } SCWSObject;
 
 #define scws_doc "SCWS Objects.\n\n" \
@@ -24,6 +25,7 @@ static int scws_init(SCWSObject* self, PyObject *args, PyObject *kwds){
         return -1;
 
     self->scws = NULL;
+    self->ignore = 0;
     Py_BEGIN_ALLOW_THREADS
     s = scws_new();
     Py_END_ALLOW_THREADS
@@ -96,6 +98,34 @@ static void scws_dealloc(SCWSObject *self){
     self->ob_type->tp_free(self);
 }
 
+static PyObject *my_scws_get_ignore(SCWSObject *self, void *x){
+    return PyBool_FromLong(self->ignore);
+}
+
+static int my_scws_set_ignore(SCWSObject *self, PyObject *val, void *x){
+    if(!PyBool_Check(val)){
+        PyErr_SetString(PyExc_TypeError, "ignore should be a boolean value");
+        return -1;
+    }
+    if(val == Py_True){
+        if(self->ignore != 1){
+            scws_set_ignore(self->scws, 1);
+            self->ignore = 1;
+        }
+    }else{
+        if(self->ignore != 0){
+            scws_set_ignore(self->scws, 0);
+            self->ignore = 0;
+        }
+    }
+    return 0;
+}
+
+static PyGetSetDef scws_getsetdef[] = {
+    {"ignore", (getter)my_scws_get_ignore, (setter)my_scws_set_ignore, "whether to ignore punctuations", NULL},
+    {NULL, NULL, NULL, NULL, NULL},
+};
+
 static PyTypeObject SCWSObjectType = {
     PyObject_HEAD_INIT(NULL)
     0,                        /* ob_size           */
@@ -127,7 +157,7 @@ static PyTypeObject SCWSObjectType = {
     0,                        /* tp_iternext       */
     0,                        /* tp_methods        */
     0,                        /* tp_members        */
-    0,                        /* tp_getset         */
+    scws_getsetdef,           /* tp_getset         */
     0,                        /* tp_base           */
     0,                        /* tp_dict           */
     0,                        /* tp_descr_get      */
