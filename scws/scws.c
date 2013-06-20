@@ -12,6 +12,8 @@ typedef struct {
     "\"rules\" file path and \"charset\" (default is " \
     "\"utf-8\")."
 
+static PyObject *DictError;
+
 static int scws_init(SCWSObject* self, PyObject *args, PyObject *kwds){
     static char *kwlist[] = {"dict", "rules", "charset", "dicttype", NULL};
     char *dict;
@@ -19,6 +21,7 @@ static int scws_init(SCWSObject* self, PyObject *args, PyObject *kwds){
     char *charset = "utf-8";
     int dicttype = SCWS_XDICT_XDB;
     scws_t s; /* scws_t is a pointer type.... */
+    int st;
 
     if(!PyArg_ParseTupleAndKeywords(args, kwds, "s|zsi", kwlist,
                 &dict, &rules, &charset, &dicttype))
@@ -37,25 +40,15 @@ static int scws_init(SCWSObject* self, PyObject *args, PyObject *kwds){
     self->scws = s;
     Py_BEGIN_ALLOW_THREADS
     scws_set_charset(s, charset); /* fallback to "gbk" if error.... */
-
-    char *d_str, *p_str, *q_str;
-    int dmode;
-    d_str = dict;
-    do {
-        if ((p_str = strchr(d_str, ':')) != NULL) *p_str++ = '\0';
-        dmode = dicttype; // SCWS_XDICT_XDB; the default type
-        if ((q_str = strrchr(d_str, '.')) != NULL && !strcasecmp(q_str, ".txt"))
-            dmode = SCWS_XDICT_TXT;
-        dmode = scws_add_dict(s, d_str, dmode);
-        if(dmode < 0){
-            PyErr_SetString(PyExc_EnvironmentError, "failed to set dict");
-            return -1;
-        }
-    } while ((d_str = p_str) != NULL);
-
+    st = scws_set_dict(s, dict, dicttype);
     if(rules)
         scws_set_rule(s, rules);
     Py_END_ALLOW_THREADS
+
+    if(st < 0){
+        PyErr_Format(DictError, "failed to add dict file \"%s\" with dict type %d", dict, dicttype);
+        return -1;
+    }
 
     return 0;
 }
@@ -121,9 +114,35 @@ static int my_scws_set_ignore(SCWSObject *self, PyObject *val, void *x){
     return 0;
 }
 
+static PyObject *my_scws_add_dict(SCWSObject *self, PyObject *args){
+    char *dict;
+    int dicttype = SCWS_XDICT_XDB;
+    scws_t s;
+    int st;
+
+    if(!PyArg_ParseTuple(args, "s|i", &dict, &dicttype))
+        return NULL;
+
+    s = self->scws;
+    Py_BEGIN_ALLOW_THREADS
+    st = scws_add_dict(s, dict, dicttype);
+    Py_END_ALLOW_THREADS
+    if(st < 0){
+        PyErr_Format(DictError, "failed to add dict file \"%s\" with dict type %d", dict, dicttype);
+        return NULL;
+    }
+
+    Py_RETURN_NONE;
+};
+
 static PyGetSetDef scws_getsetdef[] = {
     {"ignore", (getter)my_scws_get_ignore, (setter)my_scws_set_ignore, "whether to ignore punctuations", NULL},
     {NULL, NULL, NULL, NULL, NULL},
+};
+
+static PyMethodDef scws_methods[] = {
+    {"add_dict", (PyCFunction)my_scws_add_dict, METH_VARARGS, "add additional dictionaries. Arguments are dictfile name and type."},
+    {NULL, NULL, 0, NULL},
 };
 
 static PyTypeObject SCWSObjectType = {
@@ -155,7 +174,7 @@ static PyTypeObject SCWSObjectType = {
     0,                        /* tp_weaklistoffset */
     0,                        /* tp_iter           */
     0,                        /* tp_iternext       */
-    0,                        /* tp_methods        */
+    scws_methods,             /* tp_methods        */
     0,                        /* tp_members        */
     scws_getsetdef,           /* tp_getset         */
     0,                        /* tp_base           */
@@ -169,7 +188,7 @@ static PyTypeObject SCWSObjectType = {
 };
 
 PyMODINIT_FUNC initscws(void){
-    PyObject* m;
+    PyObject *m;
 
     if (PyType_Ready(&SCWSObjectType) < 0)
         return;
@@ -179,7 +198,11 @@ PyMODINIT_FUNC initscws(void){
         return;
 
     Py_INCREF(&SCWSObjectType);
+
+    DictError = PyErr_NewException("scws.DictError", NULL, NULL);
+
     PyModule_AddObject(m, "SCWS", (PyObject *)&SCWSObjectType);
+    PyModule_AddObject(m, "DictError", DictError);
     PyModule_AddIntMacro(m, SCWS_XDICT_XDB);
     PyModule_AddIntMacro(m, SCWS_XDICT_TXT);
     PyModule_AddIntMacro(m, SCWS_XDICT_MEM);
